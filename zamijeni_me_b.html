@@ -1944,7 +1944,7 @@ async function submitRequest() {
   STATE.requests.push(mapRequest(data));
 
   // Notify owner via WhatsApp
-  const msg = `[ZamijeniMe] ${w.name} traži slobodno ${shiftLabel(reqSelectedShift)} dana ${formatDate(reqSelectedDate)}.${note?' Napomena: '+note:''}`;
+  const msg = `[ZamijeniMe]\n\n${w.name} traži slobodan dan ${formatDate(reqSelectedDate)}.\n${note?'Napomena: '+note:''}`;
   const waUrl = `https://wa.me/${STATE.owner.phone||''}?text=${encodeURIComponent(msg)}`;
   document.getElementById('req-notify-bar').innerHTML = `
     <div class="notify-bar">
