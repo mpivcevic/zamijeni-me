@@ -577,12 +577,6 @@ details[open] .hours-chevron::before{content:'▴';}
     <div class="login-no-session">
       <p>Nisi još aktiviran/a.<br>Zatraži pozivnicu od vlasnika kafića.</p>
     </div>
-    <div id="login-phone-section" style="display:none;flex-direction:column;align-items:center;width:100%;gap:10px;margin-top:8px;">
-      <input id="returning-phone" type="tel" class="form-input" placeholder="Tvoj broj mobitela" style="width:100%;text-align:center;"/>
-      <button class="btn-primary" id="btn-phone-lookup" style="width:100%;">Dalje →</button>
-      <div id="returning-error" style="color:var(--danger);font-size:13px;min-height:18px;text-align:center;"></div>
-    </div>
-    <button id="btn-returning-waiter" style="margin-top:20px;background:none;border:none;color:var(--accent);font-size:14px;cursor:pointer;padding:8px;">Već imam PIN → Prijavi se</button>
   </div>
   <!-- owner link always shown at bottom -->
   <div class="login-owner-link">
@@ -1154,7 +1148,14 @@ async function init() {
     return;
   }
 
-  // 4. Default: login screen (no-session mode)
+  // 4. PIN-only mode — cafe known but no active session
+  if (localStorage.getItem('zm_b_cafe_id')) {
+    showScreen('screen-login');
+    setupPinOnlyScreen();
+    return;
+  }
+
+  // 5. Default: login screen (no-session mode)
   showScreen('screen-login');
   setupLoginNoSession();
 }
@@ -1241,6 +1242,50 @@ function setupWaiterLoginScreen(ws) {
 function setupLoginNoSession() {
   document.getElementById('login-waiter-section').style.display = 'none';
   document.getElementById('login-no-session-section').style.display = 'flex';
+}
+
+function setupPinOnlyScreen() {
+  _loginWaiterSession = null;
+  PIN_BUFFER = '';
+  document.getElementById('login-no-session-section').style.display = 'none';
+  document.getElementById('login-waiter-section').style.display = 'flex';
+  document.getElementById('login-name-display').textContent = '';
+  document.getElementById('login-name-display').classList.remove('visible');
+  renderPinDots([]);
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('keypad').querySelectorAll('.key[data-key]').forEach(btn => {
+    btn.onclick = () => handlePinOnlyKey(btn.dataset.key);
+  });
+}
+
+let _pinOnlyVerifying = false;
+async function handlePinOnlyKey(k) {
+  if (_pinOnlyVerifying) return;
+  const err = document.getElementById('login-error');
+  err.textContent = '';
+  if (k === 'del') { PIN_BUFFER = PIN_BUFFER.slice(0, -1); renderPinDots(PIN_BUFFER); return; }
+  if (PIN_BUFFER.length >= 4) return;
+  PIN_BUFFER += k;
+  renderPinDots(PIN_BUFFER);
+  if (PIN_BUFFER.length < 4) return;
+  _pinOnlyVerifying = true;
+  const { data: rows } = await sb.rpc('login_waiter_by_pin', {
+    p_cafe_id: localStorage.getItem('zm_b_cafe_id'),
+    p_pin: PIN_BUFFER,
+  });
+  _pinOnlyVerifying = false;
+  const waiter = Array.isArray(rows) ? rows[0] : null;
+  if (waiter) {
+    const session = { id: waiter.id, name: waiter.name, cafe_id: waiter.cafe_id, color: waiter.color || AVATAR_COLORS[0] };
+    setWaiterSession(session);
+    await enterWaiterApp(session);
+  } else {
+    const dotsEl = document.getElementById('pin-dots');
+    for (let i = 0; i < 4; i++) { const d = document.getElementById(`dot-${i}`); if (d) d.classList.add('error'); }
+    dotsEl.classList.add('shake');
+    setTimeout(() => { dotsEl.classList.remove('shake'); PIN_BUFFER = ''; renderPinDots([]); }, 400);
+    err.textContent = 'Pogrešan PIN. Pokušaj ponovo.';
+  }
 }
 
 function renderPinDots(dots) {
@@ -1478,12 +1523,20 @@ async function handleInviteKey(k) {
     }
     // Set PIN
     _inviteVerifying = true;
-    const { error } = await sb.rpc('set_waiter_pin', {
+    const { data: pinSet, error } = await sb.rpc('set_waiter_pin', {
       p_waiter_id: _inviteWaiter.id,
       p_pin: _invitePinBuf,
     });
     _inviteVerifying = false;
     if (error) { err.textContent = 'Greška. Pokušaj ponovo.'; _invitePinBuf = ''; renderInviteDots([]); return; }
+    if (!pinSet) {
+      err.textContent = 'Ovaj PIN je već zauzet. Odaberi drugi.';
+      _invitePinBuf = ''; _invitePinFirst = ''; _inviteStep = 'setup';
+      document.getElementById('invite-confirm-label').style.display = 'none';
+      document.getElementById('invite-instruction').textContent = 'Postavi 4-znamenkasti PIN za prijavu.';
+      renderInviteDots([]); return;
+    }
+    localStorage.setItem('zm_b_cafe_id', _inviteWaiter.cafe_id);
     const session = {id: _inviteWaiter.id, name: _inviteWaiter.name, cafe_id: _inviteWaiter.cafe_id, color: _inviteWaiter.color || AVATAR_COLORS[0]};
     setWaiterSession(session);
     // Remove invite token from URL
@@ -1533,6 +1586,7 @@ async function logout() {
   showScreen('screen-login');
   const ws = getWaiterSession();
   if (ws) setupWaiterLoginScreen(ws);
+  else if (localStorage.getItem('zm_b_cafe_id')) setupPinOnlyScreen();
   else setupLoginNoSession();
 }
 
@@ -2769,29 +2823,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     showScreen('screen-owner-auth');
   });
 
-  document.getElementById('btn-returning-waiter').addEventListener('click', () => {
-    document.getElementById('login-phone-section').style.display = 'flex';
-    document.getElementById('btn-returning-waiter').style.display = 'none';
-    document.getElementById('returning-phone').focus();
-  });
-
-  document.getElementById('btn-phone-lookup').addEventListener('click', async () => {
-    const phone = document.getElementById('returning-phone').value.trim().replace(/\s+/g, '');
-    const errEl = document.getElementById('returning-error');
-    errEl.textContent = '';
-    if (!phone) { errEl.textContent = 'Upiši broj mobitela.'; return; }
-    const btn = document.getElementById('btn-phone-lookup');
-    btn.disabled = true; btn.textContent = '...';
-    const { data: waiter } = await sb.from('waiters').select('*').eq('phone', phone).maybeSingle();
-    btn.disabled = false; btn.textContent = 'Dalje →';
-    if (!waiter) { errEl.textContent = 'Broj nije pronađen. Provjeri s vlasnikom.'; return; }
-    _loginWaiterSession = { id: waiter.id, name: waiter.name, cafe_id: waiter.cafe_id, color: waiter.color };
-    setupWaiterLoginScreen(_loginWaiterSession);
-  });
-
-  document.getElementById('returning-phone').addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('btn-phone-lookup').click();
-  });
 
   // Owner auth
   document.getElementById('btn-auth-submit').addEventListener('click', handleAuthSubmit);
