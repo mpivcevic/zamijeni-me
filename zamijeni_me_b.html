@@ -410,6 +410,7 @@ details[open] .hours-chevron::before{content:'▴';}
 .shift-option.selected{border-color:var(--accent);background:var(--accent-light);color:var(--accent);}
 .shift-option:active{transform:scale(0.97);}
 .shift-option.disabled{opacity:0.3;pointer-events:none;}
+.req-section-label{font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;}
 .note-input{width:100%;padding:12px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;font-family:inherit;resize:none;outline:none;margin-bottom:16px;transition:border-color 0.15s;}
 .note-input:focus{border-color:var(--accent);}
 .note-input::placeholder{color:var(--text-3);}
@@ -834,14 +835,12 @@ details[open] .hours-chevron::before{content:'▴';}
       <button class="cal-nav-btn" id="req-cal-next">›</button>
     </div>
     <div class="calendar-grid" id="req-calendar"></div>
-    <div class="shift-picker" id="req-shift-picker">
-      <div class="shift-picker-row">
-        <div class="shift-option" data-shift="jutro"><span class="shift-icon">I</span>Jutro</div>
-        <div class="shift-option" data-shift="međusmjena"><span class="shift-icon">II</span>Međusmjena</div>
-        <div class="shift-option" data-shift="popodne"><span class="shift-icon">III</span>Popodne</div>
-      </div>
-      <div class="shift-picker-row">
-        <div class="shift-option" data-shift="oboje"><span class="shift-icon">📅</span>Cijeli dan</div>
+    <div id="req-shift-section" style="display:none;margin-bottom:16px;">
+      <div class="req-section-label">Ne mogu raditi:</div>
+      <div class="shift-picker-row" id="req-cant-work-picker"></div>
+      <div id="req-can-cover-wrap" style="display:none;margin-top:12px;">
+        <div class="req-section-label">Mogu zamijeniti za: <span style="font-weight:400;text-transform:none;letter-spacing:0;">(neobavezno)</span></div>
+        <div class="shift-picker-row" id="req-can-cover-picker"></div>
       </div>
     </div>
     <textarea class="note-input" id="req-note" placeholder="Napomena (neobavezno)..." rows="2"></textarea>
@@ -1854,18 +1853,20 @@ function renderMyShifts() {
 // ══════════════════════════════════════════════════════════
 let reqCalDate = new Date();
 let reqSelectedDate = null;
-let reqSelectedShift = null;
+let reqCantWork = new Set();
+let reqCanCover = new Set();
 
 function openRequestModal() {
   reqCalDate = new Date();
   reqSelectedDate = null;
-  reqSelectedShift = null;
+  reqCantWork = new Set();
+  reqCanCover = new Set();
   document.getElementById('req-note').value = '';
   document.getElementById('req-notify-bar').style.display = 'none';
   document.getElementById('btn-submit-request').style.display = 'flex';
   document.getElementById('btn-cancel-request').textContent = 'Odustani';
   renderReqCalendar();
-  renderShiftPicker();
+  renderReqShiftSection();
   document.getElementById('modal-request').classList.add('open');
 }
 
@@ -1905,46 +1906,95 @@ function renderReqCalendar() {
   }
   cal.innerHTML = html;
   cal.querySelectorAll('.cal-day:not(.empty):not(.past):not(.off-day)').forEach(el => {
-    el.addEventListener('click', () => { reqSelectedDate = el.dataset.iso; renderReqCalendar(); renderShiftPicker(); });
+    el.addEventListener('click', () => { reqSelectedDate = el.dataset.iso; reqCantWork = new Set(); reqCanCover = new Set(); renderReqCalendar(); renderReqShiftSection(); });
   });
 }
 
-function renderShiftPicker() {
+function renderReqShiftSection() {
   const w = currentWaiter();
-  document.getElementById('req-shift-picker').querySelectorAll('.shift-option').forEach(opt => {
-    const s = opt.dataset.shift;
-    opt.classList.remove('selected','disabled');
-    if (!reqSelectedDate) { opt.classList.add('disabled'); return; }
-    if (s==='jutro'&&!worksShift(w,reqSelectedDate,'jutro')) opt.classList.add('disabled');
-    if (s==='međusmjena'&&!worksShift(w,reqSelectedDate,'međusmjena')) opt.classList.add('disabled');
-    if (s==='popodne'&&!worksShift(w,reqSelectedDate,'popodne')) opt.classList.add('disabled');
-    if (s==='oboje'&&(!worksShift(w,reqSelectedDate,'jutro')||!worksShift(w,reqSelectedDate,'popodne'))) opt.classList.add('disabled');
-    if (dayOfWeek(reqSelectedDate)===6&&s==='popodne') opt.classList.add('disabled');
-    if (s === reqSelectedShift) opt.classList.add('selected');
+  const section = document.getElementById('req-shift-section');
+  const cantPicker = document.getElementById('req-cant-work-picker');
+  const canWrap = document.getElementById('req-can-cover-wrap');
+  const canPicker = document.getElementById('req-can-cover-picker');
+  if (!reqSelectedDate || !w) { section.style.display = 'none'; return; }
+  const allShifts = ['jutro', 'međusmjena', 'popodne'];
+  const dow = dayOfWeek(reqSelectedDate);
+  const myShifts = allShifts.filter(s => !(s === 'popodne' && dow === 6) && worksShift(w, reqSelectedDate, s));
+  const otherShifts = allShifts.filter(s => !(s === 'popodne' && dow === 6) && !myShifts.includes(s));
+  if (myShifts.length === 0) {
+    section.style.display = 'block';
+    cantPicker.innerHTML = '<div style="color:var(--text-2);font-size:13px;padding:8px 0;">Nisi na rasporedu taj dan.</div>';
+    canWrap.style.display = 'none';
+    return;
+  }
+  if (reqCantWork.size === 0) myShifts.forEach(s => reqCantWork.add(s));
+  const shiftIcon = s => s === 'jutro' ? 'I' : s === 'međusmjena' ? 'II' : 'III';
+  const shiftName = s => s === 'jutro' ? 'Jutro' : s === 'međusmjena' ? 'Međusmjena' : 'Popodne';
+  cantPicker.innerHTML = myShifts.map(s =>
+    `<div class="shift-option req-cant-opt${reqCantWork.has(s)?' selected':''}" data-shift="${s}"><span class="shift-icon">${shiftIcon(s)}</span>${shiftName(s)}</div>`
+  ).join('');
+  cantPicker.querySelectorAll('.req-cant-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      const s = opt.dataset.shift;
+      if (reqCantWork.has(s)) reqCantWork.delete(s); else reqCantWork.add(s);
+      renderReqShiftSection();
+    });
   });
+  if (otherShifts.length > 0) {
+    canPicker.innerHTML = otherShifts.map(s =>
+      `<div class="shift-option req-can-opt${reqCanCover.has(s)?' selected':''}" data-shift="${s}"><span class="shift-icon">${shiftIcon(s)}</span>${shiftName(s)}</div>`
+    ).join('');
+    canPicker.querySelectorAll('.req-can-opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        const s = opt.dataset.shift;
+        if (reqCanCover.has(s)) reqCanCover.delete(s); else reqCanCover.add(s);
+        renderReqShiftSection();
+      });
+    });
+    canWrap.style.display = 'block';
+  } else {
+    canWrap.style.display = 'none';
+  }
+  section.style.display = 'block';
 }
 
 async function submitRequest() {
   if (!reqSelectedDate) { showToast('Odaberi datum'); return; }
-  if (!reqSelectedShift) { showToast('Odaberi smjenu'); return; }
+  if (reqCantWork.size === 0) { showToast('Odaberi što ne možeš raditi'); return; }
   const w = currentWaiter();
   const note = document.getElementById('req-note').value.trim();
   const btn = document.getElementById('btn-submit-request');
   btn.disabled = true;
+  const allShifts = ['jutro', 'međusmjena', 'popodne'];
+  const myShifts = allShifts.filter(s => worksShift(w, reqSelectedDate, s));
+  const cantArr = [...reqCantWork];
+  const canArr = [...reqCanCover];
+  const shift = myShifts.every(s => reqCantWork.has(s)) ? 'oboje' : cantArr[0];
+  const shiftName = s => s === 'jutro' ? 'Jutro' : s === 'međusmjena' ? 'Međusmjena' : 'Popodne';
+  const canCoverNote = canArr.length > 0 ? `[može: ${canArr.map(shiftName).join(', ')}]` : '';
+  const fullNote = [canCoverNote, note].filter(Boolean).join(' ');
   const { data, error } = await sb.from('shift_requests').insert({
     cafe_id: STATE.cafe.id,
     waiter_id: w.id,
     date: reqSelectedDate,
-    shift: reqSelectedShift,
-    note,
+    shift,
+    note: fullNote,
     status: 'open',
   }).select().single();
   btn.disabled = false;
   if (error) { showToast('Greška. Pokušaj ponovo.'); return; }
   STATE.requests.push(mapRequest(data));
 
-  // Notify owner via WhatsApp
-  const msg = `[ZamijeniMe]\n\n${w.name} traži slobodan dan ${formatDate(reqSelectedDate)}.\n${note?'Napomena: '+note:''}`;
+  // Build WhatsApp message
+  let msg;
+  if (shift === 'oboje' && canArr.length === 0) {
+    msg = `[ZamijeniMe]\n\n${w.name} traži slobodan dan ${formatDate(reqSelectedDate)}.`;
+  } else if (canArr.length > 0) {
+    msg = `[ZamijeniMe]\n\n${w.name} ne može ${cantArr.map(shiftName).join(' i ')} ${formatDate(reqSelectedDate)}.\nMože zamijeniti za: ${canArr.map(shiftName).join(' ili ')}.`;
+  } else {
+    msg = `[ZamijeniMe]\n\n${w.name} ne može ${cantArr.map(shiftName).join(' i ')} ${formatDate(reqSelectedDate)}.`;
+  }
+  if (note) msg += `\nNapomena: ${note}`;
   const waUrl = `https://wa.me/${STATE.owner.phone||''}?text=${encodeURIComponent(msg)}`;
   document.getElementById('req-notify-bar').innerHTML = `
     <div class="notify-bar">
@@ -2785,10 +2835,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-cancel-request').addEventListener('click', closeRequestModal);
   document.getElementById('req-cal-prev').addEventListener('click', ()=>{reqCalDate=new Date(reqCalDate.getFullYear(),reqCalDate.getMonth()-1,1);renderReqCalendar();});
   document.getElementById('req-cal-next').addEventListener('click', ()=>{reqCalDate=new Date(reqCalDate.getFullYear(),reqCalDate.getMonth()+1,1);renderReqCalendar();});
-  document.getElementById('req-shift-picker').querySelectorAll('.shift-option').forEach(opt=>{
-    opt.addEventListener('click',()=>{reqSelectedShift=opt.dataset.shift;renderShiftPicker();});
-  });
-
   // Swaps filter
   document.getElementById('swaps-filter-tabs').querySelectorAll('.filter-tab').forEach(tab=>{
     tab.addEventListener('click',()=>{
