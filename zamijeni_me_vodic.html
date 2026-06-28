@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZamijeniMe — Vodič za vlasnika</title>
+  <style>
+    :root{
+      --accent:#3b7cf4;
+      --accent-light:#eff6ff;
+      --bg:#f5f6fa;
+      --surface:#ffffff;
+      --border:#e5e7eb;
+      --text:#111827;
+      --text-2:#6b7280;
+      --text-3:#9ca3af;
+      --warn:#f59e0b;
+      --warn-light:#fef3c7;
+      --success:#10b981;
+      --success-light:#d1fae5;
+      --danger:#ef4444;
+      --danger-light:#fee2e2;
+      --radius:14px;
+      --radius-sm:8px;
+    }
+    @media(prefers-color-scheme:dark){
+      :root{
+        --bg:#0f1117;
+        --surface:#1a1d27;
+        --border:#2a2d3a;
+        --text:#f0f2f8;
+        --text-2:#9ca3af;
+        --text-3:#6b7280;
+        --accent-light:#0d1f40;
+        --warn-light:#2a1a00;
+        --success-light:#002a15;
+        --danger-light:#2a0000;
+      }
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.6;
+      -webkit-text-size-adjust:100%;
+    }
+    .wrapper{max-width:480px;margin:0 auto;padding-bottom:60px;}
+
+    /* ── HEADER ── */
+    .guide-header{
+      background:var(--accent);
+      color:#fff;
+      padding:40px 24px 32px;
+      text-align:center;
+    }
+    .guide-logo{font-size:30px;font-weight:800;letter-spacing:-0.03em;}
+    .guide-logo span{opacity:0.65;}
+    .guide-tagline{font-size:13px;font-weight:500;opacity:0.85;margin-top:6px;letter-spacing:0.06em;text-transform:uppercase;}
+
+    /* ── TOC ── */
+    .toc{
+      display:flex;
+      background:var(--surface);
+      border-bottom:1px solid var(--border);
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
+      position:sticky;top:0;z-index:10;
+    }
+    .toc::-webkit-scrollbar{display:none;}
+    .toc a{
+      flex:0 0 auto;
+      padding:13px 16px;
+      font-size:13px;font-weight:600;
+      color:var(--text-2);
+      text-decoration:none;
+      border-bottom:2px solid transparent;
+      white-space:nowrap;
+      transition:color 0.15s,border-color 0.15s;
+    }
+    .toc a:hover{color:var(--accent);border-bottom-color:var(--accent);}
+
+    /* ── SECTION ── */
+    .guide-section{padding:28px 16px 0;}
+    .section-header{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+    .section-icon{
+      width:48px;height:48px;flex-shrink:0;
+      background:var(--accent);border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:24px;
+    }
+    .section-title{font-size:22px;font-weight:700;}
+
+    /* ── CARDS ── */
+    .guide-card{
+      background:var(--surface);
+      border-radius:var(--radius);
+      padding:16px;
+      margin-bottom:10px;
+      border:1px solid var(--border);
+    }
+    .card-label{
+      font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+      color:var(--text-3);margin-bottom:10px;
+    }
+    .guide-card p{font-size:14px;color:var(--text-2);line-height:1.6;margin-bottom:8px;}
+    .guide-card p:last-child{margin-bottom:0;}
+    .guide-card p strong{color:var(--text);font-weight:600;}
+
+    /* ── STEPS ── */
+    .steps{display:flex;flex-direction:column;gap:12px;}
+    .step{display:flex;gap:12px;align-items:flex-start;}
+    .step-num{
+      width:26px;height:26px;border-radius:50%;flex-shrink:0;
+      background:var(--accent);color:#fff;
+      font-size:12px;font-weight:700;
+      display:flex;align-items:center;justify-content:center;
+      margin-top:1px;
+    }
+    .step-body{font-size:14px;color:var(--text-2);line-height:1.55;}
+    .step-body strong{color:var(--text);font-weight:600;}
+
+    /* ── PIN DISPLAY ── */
+    .pin-row{display:flex;gap:8px;justify-content:center;margin:18px 0 6px;}
+    .pin-digit{
+      width:52px;height:60px;
+      background:var(--surface);
+      border:2px solid var(--accent);
+      border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:26px;font-weight:700;color:var(--accent);
+    }
+
+    /* ── SHIFT PILLS ── */
+    .shift-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+    .pill{
+      display:flex;align-items:center;gap:6px;
+      padding:7px 14px;border-radius:99px;
+      font-size:13px;font-weight:600;
+    }
+    .pill.jutro {background:var(--warn-light);color:#92400e;border:1px solid var(--warn);}
+    .pill.mid   {background:var(--success-light);color:#065f46;border:1px solid var(--success);}
+    .pill.popodne{background:var(--accent-light);color:#1e40af;border:1px solid var(--accent);}
+    @media(prefers-color-scheme:dark){
+      .pill.jutro  {color:#fbbf24;}
+      .pill.mid    {color:#34d399;}
+      .pill.popodne{color:#60a5fa;}
+    }
+
+    /* ── BADGES ── */
+    .badge{
+      display:inline-flex;align-items:center;gap:4px;
+      padding:3px 10px;border-radius:99px;
+      font-size:12px;font-weight:600;
+    }
+    .badge.ceka     {background:var(--warn-light);color:#92400e;}
+    .badge.odobreno {background:var(--success-light);color:#065f46;}
+    .badge.odbijeno {background:var(--danger-light);color:#991b1b;}
+    @media(prefers-color-scheme:dark){
+      .badge.ceka    {color:#fbbf24;}
+      .badge.odobreno{color:#34d399;}
+      .badge.odbijeno{color:#f87171;}
+    }
+
+    /* ── TIPS ── */
+    .tip{
+      display:flex;gap:10px;align-items:flex-start;
+      background:var(--surface);
+      border-radius:var(--radius-sm);
+      border-left:3px solid var(--accent);
+      padding:12px 14px;
+      margin-bottom:10px;
+      font-size:13px;color:var(--text-2);line-height:1.5;
+    }
+    .tip-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+    .tip strong{color:var(--text);font-weight:600;}
+
+    /* ── PATTERN DEMO ── */
+    .pattern-demo{
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:4px;
+      margin-top:10px;
+    }
+    .pd-day{
+      display:flex;flex-direction:column;align-items:center;gap:3px;
+      font-size:10px;color:var(--text-3);font-weight:600;text-transform:uppercase;
+    }
+    .pd-cell{
+      width:100%;aspect-ratio:1;border-radius:6px;
+      border:1px solid var(--border);
+      display:flex;align-items:center;justify-content:center;
+      font-size:10px;
+    }
+    .pd-cell.m{background:var(--warn-light);border-color:var(--warn);color:#92400e;}
+    .pd-cell.s{background:var(--success-light);border-color:var(--success);color:#065f46;}
+    .pd-cell.a{background:var(--accent-light);border-color:var(--accent);color:#1e40af;}
+    @media(prefers-color-scheme:dark){
+      .pd-cell.m{color:#fbbf24;}.pd-cell.s{color:#34d399;}.pd-cell.a{color:#60a5fa;}
+    }
+
+    /* ── DIVIDER ── */
+    .divider{height:1px;background:var(--border);margin:28px 16px 0;}
+
+    /* ── FOOTER ── */
+    .guide-footer{
+      text-align:center;
+      padding:40px 24px 20px;
+      font-size:12px;color:var(--text-3);
+    }
+    .guide-footer strong{color:var(--accent);}
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <div class="guide-header">
+    <div class="guide-logo">Zamijeni<span>Me</span></div>
+    <div class="guide-tagline">Vodič za vlasnika</div>
+  </div>
+
+  <!-- TOC -->
+  <nav class="toc">
+    <a href="#prijava">🔑 Prijava</a>
+    <a href="#zamjene">🔄 Zamjene</a>
+    <a href="#tjedan">📅 Tjedan</a>
+    <a href="#admin">⚙️ Admin</a>
+    <a href="#smjene">I·II·III Smjene</a>
+    <a href="#savjeti">💡 Savjeti</a>
+  </nav>
+
+  <!-- ══ 1. PRIJAVA ══ -->
+  <section class="guide-section" id="prijava">
+    <div class="section-header">
+      <div class="section-icon">🔑</div>
+      <div class="section-title">Prijava</div>
+    </div>
+
+    <div class="guide-card">
+      <div class="card-label">Vaš PIN</div>
+      <div class="pin-row">
+        <div class="pin-digit">0</div>
+        <div class="pin-digit">0</div>
+        <div class="pin-digit">0</div>
+        <div class="pin-digit">0</div>
+      </div>
+      <p>Unesite PIN <strong>0000</strong> na zaslonu za prijavu. Ovaj PIN otvara vlasnički prikaz s Admin karticom i svim zahtjevima.</p>
+    </div>
+
+    <div class="guide-card">
+      <div class="card-label">PINovi konobarica</div>
+      <p>Svaka konobarica ima vlastiti 4-znamenkasti PIN. Pinovi su vidljivi u <strong>Admin → Konobari</strong>. Podijelite ih s konobaricama da se mogu prijaviti.</p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ══ 2. ZAMJENE ══ -->
+  <section class="guide-section" id="zamjene">
+    <div class="section-header">
+      <div class="section-icon">🔄</div>
+      <div class="section-title">Kartica Zamjene</div>
+    </div>
+
+    <div class="guide-card">
+      <div class="card-label">Što vidite</div>
+      <p>Svi zahtjevi konobarica za slobodne dane ili zamjene smjena. Zahtjev prikazuje <strong>ime, datum, smjenu</strong> i eventualnu napomenu.</p>
+    </div>
+
+    <div class="guide-card">
+      <div class="card-label">Filtri</div>
+      <p>Koristite trake filtara pri vrhu da vidite:</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
+        <span class="badge ceka">Čeka</span>
+        <span class="badge odobreno">Odobreno</span>
+        <span class="badge odbijeno">Odbijeno</span>
+        <span style="font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--surface);border:1px solid var(--border);color:var(--text-2);">Sve</span>
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div class="card-label">Odobravanje i odbijanje</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">Pronađite zahtjev s oznakom <span class="badge ceka">Čeka</span></div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">Dodirnite <strong>✓ Odobri</strong> ili <strong>✗ Odbij</strong> na kartici zahtjeva</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">Status se odmah ažurira. Odobreni zahtjevi premještaju se u <span class="badge odobreno">Odobreno</span> filtar.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ══ 3. TJEDAN ══ -->
+  <section class="guide-section" id="tjedan">
+    <div class="section-header">
+      <div class="section-icon">📅</div>
+      <div class="section-title">Kartica Tjedan</div>
+    </div>
+
+    <div class="guide-card">
+      <div class="card-label">Što vidite</div>
+      <p>Tjedni raspored svih konobarica. Svaki stupac je jedan dan, svaki redak je jedna smjena.</p>
+      <div class="shift-pills">
+        <span class="pill jutro"><strong>I</strong> &nbsp;Jutro 07–14h</span>
+        <span class="pill mid"><strong>II</strong> &nbsp;Međusmjena</span>
+        <span class="pill popodne"><strong>III</strong> &nbsp;Popodne 14–22h</span>
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div class="card-label">Navigacija</div>
+      <p>Koristite strelice <strong>← →</strong> pri vrhu za prebacivanje između tjedana.</p>
+    </div>
+
+    <div class="guide-card">
+      <div class="card-label">Nedjelja</div>
+      <p>U nedjelju se rade samo <strong>jutarnje smjene</strong>. Polja za međusmjenu i popodne su zasivljena.</p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ══ 4. ADMIN ══ -->
+  <section class="guide-section" id="admin">
+    <div class="section-header">
+      <div class="section-icon">⚙️</div>
+      <div class="section-title">Admin panel</div>
+    </div>
+
+    <div class="guide-card">
+      <div class="card-label">Zahtjevi na čekanju</div>
+      <p>Na vrhu Admin kartice nalaze se zahtjevi koji čekaju odobrenje — isti kao filtar <span class="badge ceka">Čeka</span> u kartici Zamjene.</p>
+    </div>
+
+    <div class="guide-card">
+      <div class="card-label">Dodavanje konobarice</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">Dodirnite <strong>+ Dodaj konobara</strong></div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">Unesite <strong>ime i prezime</strong> te <strong>4-znamenkasti PIN</strong></div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">Postavite tjedni raspored u <strong>obrascu smjena</strong> (detalji ispod)</div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">Dodirnite <strong>Spremi</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div class="card-label">Uređivanje konobarice</div>
+      <p>Dodirnite ime konobarice u popisu da otvorite obrazac za uređivanje. Promijenite naziv, PIN ili raspored i dodirnite <strong>Spremi</strong>.</p>
+    </div>
+
+    <div class="guide-card">
+      <div class="card-label">Obrazac smjena — kako radi</div>
+      <p>Prikazuje 7 dana u tjednu (Pon–Ned). Svaki dan dodirnite za promjenu smjene:</p>
+      <div class="pattern-demo">
+        <div class="pd-day"><div class="pd-cell">—</div>Pon</div>
+        <div class="pd-day"><div class="pd-cell m">J</div>Uto</div>
+        <div class="pd-day"><div class="pd-cell s">M</div>Sri</div>
+        <div class="pd-day"><div class="pd-cell a">P</div>Čet</div>
+        <div class="pd-day"><div class="pd-cell m">J</div>Pet</div>
+        <div class="pd-day"><div class="pd-cell">—</div>Sub</div>
+        <div class="pd-day"><div class="pd-cell m">J</div>Ned</div>
+      </div>
+      <p style="margin-top:12px;">Ciklus po danu: <strong>slobodan → J (jutro) → M (međusmjena) → P (popodne) → slobodan…</strong></p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ══ 5. SMJENE ══ -->
+  <section class="guide-section" id="smjene">
+    <div class="section-header">
+      <div class="section-icon" style="font-size:18px;font-weight:800;letter-spacing:-0.02em;">I·III</div>
+      <div class="section-title">Tipovi smjena</div>
+    </div>
+
+    <div class="guide-card">
+      <div class="shift-pills" style="flex-direction:column;gap:10px;">
+        <span class="pill jutro"   style="border-radius:10px;padding:10px 14px;"><strong>I</strong> &nbsp;&nbsp;<strong>Jutro</strong> &nbsp;·&nbsp; 07:00 – 14:00</span>
+        <span class="pill mid"     style="border-radius:10px;padding:10px 14px;"><strong>II</strong> &nbsp;<strong>Međusmjena</strong> &nbsp;·&nbsp; sredina dana</span>
+        <span class="pill popodne" style="border-radius:10px;padding:10px 14px;"><strong>III</strong> &nbsp;<strong>Popodne</strong> &nbsp;·&nbsp; 14:00 – 22:00</span>
+      </div>
+    </div>
+
+    <div class="guide-card">
+      <div class="card-label">Nedjelja</div>
+      <p>U nedjelju su dostupne samo <span class="pill jutro" style="display:inline-flex;padding:3px 10px;font-size:12px;border-radius:99px;"><strong>I</strong>&nbsp;jutarnje smjene</span>. Međusmjena i popodne se automatski isključuju.</p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ══ 6. SAVJETI ══ -->
+  <section class="guide-section" id="savjeti">
+    <div class="section-header">
+      <div class="section-icon">💡</div>
+      <div class="section-title">Savjeti</div>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">💾</span>
+      <span><strong>Podaci se ne spremaju između sesija.</strong> Svaki put kad se aplikacija osvježi ili zatvori, podaci se vraćaju na početno stanje. Raspored se treba postaviti svaki put iznova dok ne dođe trajna pohrana.</span>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">📱</span>
+      <span><strong>Preporučeno: dodajte aplikaciju na početni zaslon.</strong> U pregledniku dodirnite Dijeli → "Dodaj na početni zaslon" za puno iskustvo bez trake preglednika.</span>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">🔢</span>
+      <span><strong>PINovi moraju biti jedinstveni.</strong> Svaka konobarica treba drugačiji 4-znamenkasti PIN. PIN vlasnika je uvijek <strong>0000</strong>.</span>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">🔄</span>
+      <span><strong>Vodič uvijek dostupan.</strong> Ovaj vodič i in-app onboarding možete pokrenuti ponovo iz <strong>Admin → Postavke → Prikaži vodič</strong>.</span>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <div class="guide-footer">
+    <strong>ZamijeniMe</strong> &nbsp;·&nbsp; Vodič za vlasnika<br>
+    v1.7 &nbsp;·&nbsp; Lipanj 2026
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZamijeniMe — Project Log</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- ============================================================
+       CHANGELOG DATA — only this block is edited on future updates
+       Add new entries at the bottom of the array.
+       Fields: id, phase ("plan"|"build"), tag ("decision"|"scope"|"ui"|"fix"), title, body, why (optional), date
+       ============================================================ -->
+  <script id="changelog-data">
+  const ENTRIES = [
+    {
+      id: "plan-1",
+      phase: "plan",
+      version: "Plan 1",
+      versionDate: "26 Jun 2026",
+      tag: "decision",
+      title: "Platform: Claude.ai artifact with Artifact Storage API",
+      body: "Runs entirely in the browser. No server, no hosting cost, no maintenance. Data persists via the artifact storage API across sessions.",
+      why: "Lightweight, zero ongoing cost, works on any phone. Right fit for a small coffee shop team.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "plan-1-auth",
+      phase: "plan",
+      version: "Plan 1",
+      tag: "decision",
+      title: "Auth: PIN per waiter + special owner PIN",
+      body: "Each waiter gets a 4-digit PIN set by the owner. No registration, no email, no passwords. A separate owner PIN unlocks the admin panel.",
+      why: "Simple enough for non-technical staff. Owner controls who's in the system.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "plan-1-shifts",
+      phase: "plan",
+      version: "Plan 1",
+      tag: "decision",
+      title: "Shift structure: two shifts/day, Sundays morning only",
+      body: "Morning and Afternoon shifts every day except Sunday (morning only). Each waiter has a stable weekly shift pattern set by the owner.",
+      why: "Reflects the actual café schedule. Stable pattern means we can pre-fill the calendar without manual entry.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "plan-1-notif",
+      phase: "plan",
+      version: "Plan 1",
+      tag: "decision",
+      title: "Notifications: wa.me deep link + mailto fallback",
+      body: "When a day-off is requested or a swap is volunteered, the app generates a pre-filled WhatsApp message. Owner taps one button to send it. Email link as backup.",
+      why: "Free, zero setup, no API approval. Fully automatic notifications require a backend — deferred to v2. Real backend cost would be ~€0/month on free tiers for a shop this size.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "plan-1-scope",
+      phase: "plan",
+      version: "Plan 1",
+      tag: "scope",
+      title: "v1 feature scope defined",
+      body: "Waiter: PIN login → calendar with pre-filled shifts → request day off (morning / afternoon / both) → see colleagues' open swap requests → volunteer to cover.\n\nOwner admin: add/edit/remove waiters (name, PIN, shift pattern), view all pending and resolved swap requests, approve or reject cover offers.\n\nWeekly schedule view: who works morning/afternoon each day, gaps highlighted.\n\nWhatsApp + email notification buttons for owner on each new event.",
+      why: "Deferred to v2: shift history/logs, fully automatic push notifications, multi-location support.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "plan-1-1-pin",
+      phase: "plan",
+      version: "Plan 1.1",
+      versionDate: "26 Jun 2026",
+      tag: "ui",
+      title: "Login flow: PIN-first, name resolved automatically",
+      body: "Changed from \"pick name → enter PIN\" to \"enter PIN → name appears automatically.\" The waiter sees their name confirmed on screen after typing their PIN.",
+      why: "More natural on mobile. A PIN keypad is faster than scrolling a name list. Also slightly more private — you don't broadcast who you are before authenticating.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "plan-1-2-mobile",
+      phase: "plan",
+      version: "Plan 1.2",
+      versionDate: "26 Jun 2026",
+      tag: "decision",
+      title: "Mobile-only: no desktop layout, touch-first throughout",
+      body: "The app targets mobile phones exclusively. No responsive breakpoints for desktop, no hover states as primary interactions, no multi-column layouts. Every tap target, spacing decision, and flow step is designed for a phone screen held in one hand.",
+      why: "Waiters will use this on their personal phones during or between shifts. Desktop adds complexity with zero benefit for this audience.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "plan-1-2-changelog",
+      phase: "plan",
+      version: "Plan 1.2",
+      tag: "decision",
+      title: "Changelog architecture: embedded JSON, surgical str_replace updates",
+      body: "Rebuilt this changelog with data separated from presentation. All entries live in a JS array at the top of the file. The HTML shell and styling below never change. New entries are added with a targeted str_replace on the data block only.",
+      why: "Avoids regenerating the full file on every update. Token cost per new entry drops from ~1,500 to ~50–80. Keeps the file browser-openable with no local server required.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "plan-1-3-name",
+      phase: "plan",
+      version: "Plan 1.3",
+      versionDate: "26 Jun 2026",
+      tag: "decision",
+      title: "App name: ZamijeniMe",
+      body: "Croatian wordplay on 'zamijeni me' (swap me / replace me). Chosen from a shortlist including Šiftarica, Šiftić, Slobodnjak, and Zamijenime. Final spelling: ZamijeniMe (camel case for readability).",
+      why: "Sounds natural in everyday speech ('ajde provjeri ZamijeniMe'), self-explanatory, and the imperative form matches exactly what the app does.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "plan-1-3-devenv",
+      phase: "plan",
+      version: "Plan 1.3",
+      tag: "decision",
+      title: "Dev environment: VS Code + Live Server + Claude Code in terminal",
+      body: "Live Server (Ritwick Dey extension) serves the app on the local network. Phone connects via Wi-Fi to the PC's IPv4 address on port 5500. Claude Code runs in the VS Code terminal for direct file editing. This changelog is kept separately and updated in claude.ai.",
+      why: "Live Server auto-refreshes the phone on every file save — no manual transfer needed. Claude Code handles direct edits; claude.ai handles changelog and project-level decisions where full conversation history matters.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1",
+      phase: "build",
+      version: "Build 1",
+      versionDate: "26 Jun 2026",
+      tag: "scope",
+      title: "First working version shipped",
+      body: "Full single-file app (zamijeni_me.html) with all planned v1 screens:\n\n• Login: 4-digit PIN pad, name resolves as you type, shake animation on wrong PIN\n• Home: personalised greeting, 7-day week strip, shift cards with status badges, day-off CTA\n• Request modal: calendar (only shows days you work), shift picker (auto-disables unavailable shifts), note field, WhatsApp + email notification buttons\n• Zamjene tab: three filters (Otvorene / Moje / Pokrivene), volunteer to cover with one tap, owner notification modal\n• Tjedan tab: 7-column grid with morning/afternoon rows, names per cell, open requests highlighted in red\n• Admin tab (owner PIN 0000): pending approvals with approve/reject, full waiter management (add/edit/delete, PIN, shift pattern grid)\n• Light/dark theme toggle on every tab\n\nPre-loaded with 6 dummy waiters and 3 sample requests.",
+      why: "Establishes the full skeleton. All core flows are navigable and testable on a real phone before any refinement.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-1-greeting",
+      phase: "build",
+      version: "Build 1.1",
+      versionDate: "26 Jun 2026",
+      tag: "fix",
+      title: "Greeting always showed 'Dobro jutro' regardless of time",
+      body: "The ternary condition used a string literal 'hr' instead of the variable hr, so the time-of-day comparison was never evaluated. Fixed to hr<17 so the greeting correctly cycles: Dobro jutro (before 12) → Dobar dan (12–17) → Dobra večer (17+).",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-1-alignment",
+      phase: "build",
+      version: "Build 1.1",
+      tag: "fix",
+      title: "Layout broken: header and content displayed side-by-side",
+      body: "The home tab (#tab-home) was missing the flex-direction:column, flex:1, and overflow:hidden declarations that the other three tabs had set via inline styles. When JS switched the tab to display:flex, the default flex-direction:row caused the header and screen body to sit next to each other instead of stacking vertically — making the content appear pushed to the right.\n\nFixed by adding a .tab-content CSS rule that applies these properties to all tabs uniformly.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-1-week-legend",
+      phase: "build",
+      version: "Build 1.1",
+      tag: "ui",
+      title: "Week view: initials in chips + waiter colour legend",
+      body: "The week grid showed first names in coloured chips but gave no reference for what the colours meant. First names also overflowed the narrow 7-column cells.\n\nChanged chips to show 2-letter initials (e.g. AH for Ana Horvat). Added a waiter legend below the shift legend: each waiter's chip colour + first name, rendered dynamically so it stays in sync with the staff list.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-1-admin-darkmode",
+      phase: "build",
+      version: "Build 1.1",
+      tag: "fix",
+      title: "Admin tab had two dark mode toggles",
+      body: "The Admin tab had a theme toggle button in the header (consistent with all other tabs) and a second toggle inside the Postavke section. The duplicate in Postavke was removed. The header button remains as the single control, matching the pattern on the Home, Zamjene, and Tjedan tabs.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-2-viewport",
+      phase: "build",
+      version: "Build 1.2",
+      versionDate: "26 Jun 2026",
+      tag: "fix",
+      title: "Pinch-zoom re-enabled for small screens",
+      body: "Removed maximum-scale=1.0 and user-scalable=no from the viewport meta tag. Users with small phone screens can now pinch-zoom to read content more comfortably.",
+      why: "Disabling zoom is an accessibility anti-pattern. The app layout is already mobile-first; zoom is a fallback safety net, not a design concern.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-2-weekstrip",
+      phase: "build",
+      version: "Build 1.2",
+      tag: "ui",
+      title: "Home week strip: all 7 days fit without horizontal scroll",
+      body: "Changed day chips from fixed min-width:52px to flex:1 so they distribute evenly across the full screen width. Reduced padding and font sizes slightly to accommodate smaller screens. Shift labels shortened to J / P / J+P to fit the narrower chips.",
+      why: "The horizontal scroll in the strip felt like accidental overflow, not intentional navigation. All 7 days of the week should be visible at a glance.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-2-modal-scroll",
+      phase: "build",
+      version: "Build 1.2",
+      tag: "fix",
+      title: "Request modal: scroll fixed, slide-down dismiss added",
+      body: "Added -webkit-overflow-scrolling:touch and overscroll-behavior:contain to the modal so touch scrolling works reliably on iOS.\n\nDismissing the modal now animates the sheet sliding off the bottom of the screen (0.25s). Both the close button and tapping the backdrop trigger this animation. Swiping down from the top of the modal (when scrolled to top) also dismisses it.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-2-week-legend",
+      phase: "build",
+      version: "Build 1.2",
+      tag: "ui",
+      title: "Week view legend: removed redundant items, clarified red indicator",
+      body: "Removed the Jutro (amber) and Popodne (blue) legend squares — they duplicated information already shown by the row labels (🌅 Jutro / ☀️ Pop.). The red indicator remained but was relabelled from 'Slobodan dan' to 'Otvoreni zahtjev' to accurately describe what it marks: a cell where someone has an open, uncovered swap request (a potential staffing gap).",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-2-waiter-legend",
+      phase: "build",
+      version: "Build 1.2",
+      tag: "ui",
+      title: "Week view waiter legend: 4-column grid with fixed alignment",
+      body: "Changed the waiter colour legend from a free-wrapping flexbox row to a strict 4-column CSS grid. Each cell is fixed-width with truncated overflow, so names align vertically regardless of length.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-2-month-tab",
+      phase: "build",
+      version: "Build 1.2",
+      tag: "scope",
+      title: "New tab: Mjesec — personal monthly calendar",
+      body: "Added a fifth tab (Mjesec / 🗓️) visible only to regular users (not the owner, who has no personal shift pattern).\n\nShows the logged-in waiter's own schedule for the selected month:\n• Amber background = jutarnja smjena\n• Blue background = poslijepodnevna smjena\n• Diagonal amber+blue = both shifts that day\n• Red background = approved day off (originally a work day)\n• Amber dot = pending swap request for that day\n\nPast days render at 55% opacity. Month navigation arrows step one month at a time.",
+      why: "The weekly grid shows all staff and is useful for team coordination. Waiters needed a personal view to quickly see their own month without scanning the grid.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-3-isodate",
+      phase: "build",
+      version: "Build 1.3",
+      versionDate: "26 Jun 2026",
+      tag: "fix",
+      title: "Date display off by one day in week view (timezone bug)",
+      body: "isoDate() was calling toISOString() which returns UTC time. In timezones east of UTC (e.g. CEST UTC+2), local midnight is already the previous day in UTC — so every date generated from a Date object was silently shifted one day back. The week view column header showed the local date (correct) but matched requests using the UTC date (wrong), causing swap requests to appear in the wrong column.\n\nFixed by replacing toISOString() with getFullYear() / getMonth() / getDate() — all local-time methods. All date comparisons across the app are now consistent.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-3-marko-date",
+      phase: "build",
+      version: "Build 1.3",
+      tag: "fix",
+      title: "Marko's sample request corrected to match his shift pattern",
+      body: "The test request was dated 2026-07-03 (Friday) with shift 'jutro', but Marko works mornings on Thursdays and afternoons on Fridays — the data was inconsistent. Moved to 2026-07-02 (Thursday morning), which is correct per his pattern and consistent with the note 'Imam liječnika ujutro'.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-3-section-label",
+      phase: "build",
+      version: "Build 1.3",
+      tag: "ui",
+      title: "'Ove smjene' renamed to 'Sljedeće smjene'",
+      body: "The section on the home screen shows the next upcoming shifts for the logged-in waiter, not 'these shifts' in a general sense. Renamed to 'Sljedeće smjene' (Next shifts) to accurately describe what is shown.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-3-shift-feed",
+      phase: "build",
+      version: "Build 1.3",
+      tag: "fix",
+      title: "Shift feed: rolling 14-day window instead of current-week boundary",
+      body: "Previously the feed iterated from Monday of the current week and skipped past days, causing large variance by weekday: up to 6 cards on Monday, as few as 1 on Saturday with no visibility into next week.\n\nChanged to iterate from today forward for 14 days, stopping after 5 shifts. Content is now consistent regardless of which day of the week the app is opened.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-3-tabbar-scroll",
+      phase: "build",
+      version: "Build 1.3",
+      tag: "ui",
+      title: "Tab bar: horizontal scroll instead of shrink-to-fit",
+      body: "Changed tab buttons from flex:1 (equal width, shrinks with more tabs) to flex:0 0 auto with min-width:72px (natural width, scrollable). The tab bar now scrolls horizontally when tabs exceed screen width, preserving legibility at any tab count.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-3-week-dim",
+      phase: "build",
+      version: "Build 1.3",
+      tag: "ui",
+      title: "Week view: current user's chip highlighted, colleagues dimmed",
+      body: "In the weekly staff grid, the logged-in waiter's own name chip renders at full opacity. All other waiters' chips are shown at 28% opacity. The user can now locate their own shifts across the week at a glance without scanning every cell.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-3-legend-columns",
+      phase: "build",
+      version: "Build 1.3",
+      tag: "ui",
+      title: "Week view waiter legend: column-first fill order",
+      body: "Added grid-auto-flow:column and grid-template-rows:repeat(2,auto) to the waiter legend grid. Items now fill top-to-bottom within each column before moving to the next, matching the natural reading pattern for a vertical list split across columns.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-3-month-redesign",
+      phase: "build",
+      version: "Build 1.3",
+      tag: "ui",
+      title: "Monthly view: weekday/weekend backgrounds + shift indicator lines",
+      body: "Replaced the colour-background-per-shift approach with a two-layer system:\n\n• Cell background: white for working days, surface2 (light grey) for weekends — gives the month a natural rhythm at a glance\n• Shift indicator: a 3px coloured line under the date number — amber for morning, blue for afternoon, left-amber/right-blue gradient for both shifts, transparent when not working\n\nPast days shown at 55% opacity.\n\nLegend redesigned as a 2-column indicator/label grid (one row per item, perfectly aligned, no wrapping).",
+      why: "The original full-cell colour backgrounds made the calendar look like a traffic light and the legend was hard to read. The line indicator is subtler and the weekday/weekend distinction provides useful structure without needing extra legend entries.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-4-tab-layout",
+      phase: "build",
+      version: "Build 1.4",
+      versionDate: "26 Jun 2026",
+      tag: "ui",
+      title: "Tab bar: horizontal icon+label layout, smaller, 50px height",
+      body: "Changed tab buttons from column (icon above label) to row (icon beside label). Icon reduced from 20px to 17px. Tab bar height reduced from 64px to 50px, reclaiming 14px of content space on every screen.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-4-swipe-tabs",
+      phase: "build",
+      version: "Build 1.4",
+      tag: "scope",
+      title: "Tab switching via horizontal swipe (CSS snap-scroll slider)",
+      body: "All tab screens now live inside a horizontal flex slider with scroll-snap-type:x mandatory. Swiping left/right between screens transitions tabs with native scroll momentum and snap. The tab bar active indicator updates automatically as the user swipes. Tapping a tab button smooth-scrolls to the correct position.\n\nHidden tabs (Admin for regular users, Mjesec for owner) use display:none and are excluded from the slider flow and from the visible-tab order calculation.",
+      why: "The previous horizontal tab bar scroll was confusing — the user expected swiping the content area to switch tabs, not scrolling the bar itself.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-4-home-header",
+      phase: "build",
+      version: "Build 1.4",
+      tag: "ui",
+      title: "Home: greeting moves to header, section labels updated",
+      body: "The 'ZamijeniMe' logo in the home header is replaced by the personalised greeting ('Dobra večer, Ana!') at 14px. The large greeting block below is removed.\n\nSection labels updated: week strip → 'Pregled tjedna', shift cards → 'Sljedećih pet dana'. Shift card padding reduced (14px → 9px), icon 40px → 32px, gap 10px → 6px — five cards plus the 'Trebam slobodan dan' CTA now fit on one screen without scrolling.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-4-medusmjena",
+      phase: "build",
+      version: "Build 1.4",
+      tag: "scope",
+      title: "Međusmjena added as a third shift type throughout the app",
+      body: "Added mid-shift ('međusmjena') as a full shift type across the entire app:\n\n• Data model: waiter patterns extended with s:[bool×7] array. Demo data: Lucija works mid-shift Thursday, Tomislav on Friday.\n• worksShift(): handles 'međusmjena', disabled on Sundays.\n• Tjedan: new 🌿 Međ. row between Jutro and Popodne rows.\n• Mjesec: shift indicator bar supports 3 colour segments — amber (jutro), green (međusmjena), blue (popodne); combinations render as equal split gradients.\n• Zatraži slobodan dan modal: međusmjena added as a shift option (🌿).\n• Admin pattern grid: M button added between J and P per day, saves to pattern.s.\n• shiftLabel(): returns '🌿 Međusmjena'.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-4-month-weekend",
+      phase: "build",
+      version: "Build 1.4",
+      tag: "ui",
+      title: "Monthly view: stronger weekend contrast + legend trimmed",
+      body: "Weekend cells now use --month-weekend CSS variable (#dde5f0 light / #182234 dark), a noticeably stronger tint than the previous surface2. Weekday cells remain white.\n\nLegend entries 'Radni dan' and 'Vikend' removed — the background contrast makes them self-evident. Međusmjena (green line) added to the legend.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-5-tab-column",
+      phase: "build",
+      version: "Build 1.5",
+      versionDate: "26 Jun 2026",
+      tag: "ui",
+      title: "Tab bar: icon on top, label below — column layout within 50px height",
+      body: "Reverted tab button layout from row (icon beside label) back to column (icon above label). Icon kept at 16px, label reduced to 9px. Both fit comfortably within the existing 50px tab bar height with no size increase.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-5-swipe",
+      phase: "build",
+      version: "Build 1.5",
+      tag: "ui",
+      title: "Tab switching: touchstart/touchend swipe replaces CSS snap-scroll",
+      body: "Removed the CSS snap-scroll slider (too sensitive — any horizontal movement triggered a tab change). Replaced with explicit touch gesture detection on the tab container:\n\n• touchstart captures start coordinates\n• touchend checks: |dx| > 55px and |dx| > |dy| × 1.5 (horizontal dominance)\n• One swipe = one tab change\n\nA slide-in animation (22% translateX + fade, 0.2s) plays on the incoming tab from the correct direction (left swipe → slides in from right, and vice versa). Tab buttons continue to work as before.",
+      why: "The CSS snap-scroll approach was too reactive to slight diagonal scrolls and made vertical content scrolling inside tabs trigger unwanted tab switches.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-5-home-fit",
+      phase: "build",
+      version: "Build 1.5",
+      tag: "ui",
+      title: "Home screen fits one viewport without scrolling",
+      body: "Reduced vertical sizes throughout the home tab so that the week strip, section labels, 5 shift cards, and CTA button all fit on screen simultaneously:\n\n• Header height: 60px → 48px\n• Screen body padding: 16px → 12px\n• Week strip gap: 6px → 4px, margin-bottom: 20px → 10px\n• Day chip padding: 8px → 6px, gap: 3px → 2px\n• Section label margins tightened (margin-top 14→10px, margin-bottom 8→6px, font 12→11px)\n• Shift card padding: 14px → 9px, icon 40px → 32px (done in Build 1.4), gap 10→6px\n• CTA button padding: 16px → 12px",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-5-week-cell-height",
+      phase: "build",
+      version: "Build 1.5",
+      tag: "ui",
+      title: "Tjedan: week cells default-sized for 4 waiter chips",
+      body: "Increased week cell min-height from 52px to 78px. This comfortably fits 4 person-chips (each ~16px) plus padding by default. Cells extend automatically if more than 4 waiters are scheduled on a shift.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-5-month-header",
+      phase: "build",
+      version: "Build 1.5",
+      tag: "ui",
+      title: "'Moj raspored' renamed to 'Mjesečni raspored'",
+      body: "The monthly tab header title was changed from 'Moj raspored' (My schedule) to 'Mjesečni raspored' (Monthly schedule) to better describe the view's scope.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-5-shift-picker",
+      phase: "build",
+      version: "Build 1.5",
+      tag: "ui",
+      title: "Shift picker: 2-row layout (3 shifts + full-width 'Cijeli dan')",
+      body: "Restructured the shift picker in the 'Trebam slobodan dan' modal into two rows:\n\n• Row 1: Jutro | Međusmjena | Popodne — three equal-width options side by side\n• Row 2: Cijeli dan — one option spanning the full width of row 1\n\nShift option padding reduced (14→10px) and icon size reduced (22→18px) to fit three options per row cleanly.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-6-home-name",
+      phase: "build",
+      version: "Build 1.6",
+      versionDate: "26 Jun 2026",
+      tag: "ui",
+      title: "Home header shows waiter name only (no greeting prefix)",
+      body: "Removed the time-based greeting ('Dobro jutro', 'Dobar dan', 'Dobra večer') from the home tab header. The header now shows just the logged-in user's first name (e.g. 'Ana'). Owner sees 'Vlasnik'.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-6-home-no-scroll",
+      phase: "build",
+      version: "Build 1.6",
+      tag: "ui",
+      title: "Home tab: no vertical scroll — all content fits one screen",
+      body: "Set overflow:hidden on #home-body and removed the pad-bottom class. The home tab is now fully static — week strip, section labels, shift cards, and both CTA buttons all fit within one viewport with no scrolling.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-6-annual-leave",
+      phase: "build",
+      version: "Build 1.6",
+      tag: "ui",
+      title: "Added 'Zahtjev za godišnji odmor' button and modal",
+      body: "New button below 'Trebam slobodan dan' on the home screen (same btn-primary style, hidden for the owner). Opens a modal with:\n\n• Date-from and date-to pickers (native date input)\n• Optional note textarea\n• 'Pošalji zahtjev' submit button with basic validation (both dates required, end must be after start)\n• Toast confirmation on submit\n\nModal closes on tap-outside and swipe-down, consistent with the existing request modal.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-6-logout-text",
+      phase: "build",
+      version: "Build 1.6",
+      tag: "ui",
+      title: "Logout icon replaced with 'Odjava' text button",
+      body: "The 👤 icon button in the home tab header was replaced with a small bordered text button labelled 'Odjava' (12px, font-weight 600). Uses a new .btn-logout class — pill shape, surface2 background, same active state as other header buttons.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-6-tabs-spread",
+      phase: "build",
+      version: "Build 1.6",
+      tag: "ui",
+      title: "Tab buttons spread evenly across full tab bar width",
+      body: "Changed .tab-btn from flex:0 0 auto (auto-sized with min-width:60px) to flex:1; min-width:0. All visible tab buttons now share equal width across the tab bar — no horizontal scrolling, no uneven sizing regardless of label length.",
+      date: "26 Jun 2026"
+    },
+    {
+      id: "build-1-7-full-name",
+      phase: "build",
+      version: "Build 1.7",
+      versionDate: "27 Jun 2026",
+      tag: "ui",
+      title: "Home header shows full name instead of first name",
+      body: "The home tab header now displays the logged-in user's full name (e.g. 'Ana Horvat') instead of just the first name. Owner still shows 'Vlasnik'.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-1-7-annual-removed",
+      phase: "build",
+      version: "Build 1.7",
+      tag: "ui",
+      title: "Removed 'Zahtjev za godišnji odmor' button and modal",
+      body: "The annual leave request button added in Build 1.6 was removed from the home screen. The modal HTML, JS functions (openAnnualModal, closeAnnualModal, submitAnnual), event listeners, and overlay dismiss handlers were all deleted.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-1-7-shifts-spread",
+      phase: "build",
+      version: "Build 1.7",
+      tag: "ui",
+      title: "Shift cards and CTA spread vertically to fill home screen",
+      body: "Home tab body is now a flex column. The #my-shifts-list container takes flex:1 (fills remaining space after week strip and labels) and uses justify-content:space-evenly to distribute the shift cards vertically. The 'Trebam slobodan dan' button sits below. No scrolling — content is statically fitted to the viewport.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-1-8-week-strip-numerals",
+      phase: "build",
+      version: "Build 1.8",
+      versionDate: "27 Jun 2026",
+      tag: "ui",
+      title: "Pregled tjedna: J/P/M replaced with I·II·III numerals",
+      body: "Day chips in the home tab week strip now show Roman numerals instead of J/P/M letter codes. All three shifts are checked (jutro, međusmjena, popodne) and concatenated with a dot separator — e.g. 'I·III' for morning + afternoon, 'I·II·III' for all three.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-1-8-cta-no-icon",
+      phase: "build",
+      version: "Build 1.8",
+      tag: "ui",
+      title: "Removed calendar emoji from 'Trebam slobodan dan' button",
+      body: "The 📅 icon span was removed from the CTA button on the home screen. Button is now text-only.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-1-8-week-row-labels",
+      phase: "build",
+      version: "Build 1.8",
+      tag: "ui",
+      title: "Tjedni raspored: row labels show only I / II / III, larger",
+      body: "Removed 'Jutro', 'Međ.' and 'Pop.' text from week view row labels. Labels now show only the Roman numeral at 15px / font-weight 800, color upgraded from text-3 to text-2 for better visibility.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-1-8-shift-colors",
+      phase: "build",
+      version: "Build 1.8",
+      tag: "ui",
+      title: "New time-of-day shift color scheme: orange / sky blue / violet",
+      body: "Replaced the old warn/success/accent shift color mapping with dedicated CSS variables:\n\n• --shift-i: #f97316 (orange) — 06:00–14:00, warm morning\n• --shift-ii: #0ea5e9 (sky blue) — 10:00–18:00, clear midday\n• --shift-iii: #7c3aed (violet) — 14:00–22:00, dusk into evening\n\nDark-mode light variants added. Applied to: month view bars, month legend, home shift card icons, admin pattern buttons.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-1-8-month-legend",
+      phase: "build",
+      version: "Build 1.8",
+      tag: "ui",
+      title: "Mjesec tab legend updated with hour ranges and new colors",
+      body: "Month view legend now shows 'I · 06:00–14:00', 'II · 10:00–18:00', 'III · 14:00–22:00' with the new shift color bars. Old labels ('Jutarnja smjena', 'Međusmjena', 'Poslijepodnevna smjena') removed.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-1-8-time-ranges",
+      phase: "build",
+      version: "Build 1.8",
+      tag: "ui",
+      title: "Shift time ranges corrected across all views",
+      body: "Updated shift hours everywhere in the app:\n\n• I: 07:00–14:00 → 06:00–14:00\n• II: 'sredina dana' → 10:00–18:00\n• III: 14:00–22:00 (unchanged)\n\nHome screen shift cards now also include međusmjena (shift II) in the 'Sljedećih pet dana' list.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-1-9-week-label-color",
+      phase: "build",
+      version: "Build 1.9",
+      versionDate: "27 Jun 2026",
+      tag: "ui",
+      title: "Tjedan row labels: I/II/III color toned down to match day headers",
+      body: "Changed .week-row-label color from --text-2 to --text-3 — the same gray used by Pon/Uto/Sri column headers. Numerals remain bold and readable but no longer compete visually with the shift content.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-1-9-month-legend-align",
+      phase: "build",
+      version: "Build 1.9",
+      tag: "ui",
+      title: "Mjesec legend: numerals centered, hours tabular-aligned",
+      body: "Split the month legend into a 3-column grid (color bar | numeral | time). Numerals (I, II, III) are centered in their 22px column. Time spans use font-variant-numeric:tabular-nums so every digit takes equal width — the colon, dash and hour numbers all line up across all three rows.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-1-9-pin-performance",
+      phase: "build",
+      version: "Build 1.9",
+      tag: "fix",
+      title: "PIN keypad: eliminated 300ms tap delay",
+      body: "Two changes to remove mobile browser input lag:\n\n• Switched keypad listener from 'click' to 'pointerdown' — fires on finger-down instead of waiting for lift + double-tap check\n• Added touch-action:manipulation to .key CSS — tells the browser no zoom gestures on the keypad, which also removes the delay for any remaining click paths\n\nResult: PIN input responds instantly even when tapping all four digits rapidly.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-2-0-owner-home",
+      phase: "build",
+      version: "Build 2.0",
+      versionDate: "27 Jun 2026",
+      tag: "ui",
+      title: "Owner home tab: live shift coverage, pending requests, week health, hours per waiter",
+      body: "The Home tab now shows a completely different view for the owner vs waiters.\n\nOwner sees:\n• Today's coverage — 3 rows (I/II/III) showing who's working each shift and a coverage pill (green ≥2, amber 1, red 0)\n• Pending requests card — amber-highlighted if any swap requests await approval; taps through to the Zamjene tab\n• Week health strip — 7 chips for the current week, each with a day label, date, and a color dot (green=all shifts covered, amber=partial, red=nothing)\n• Hours this month — progress bar per waiter with worked hours and end-of-month projection (each shift = 8h, approved days-off excluded)",
+      why: "The owner's home tab was previously identical to a waiter's (showing personal shifts). An owner needs business-level insight at a glance: who's working today, what's waiting for attention, and whether the week is healthy.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-2-0-shiftmaker",
+      phase: "build",
+      version: "Build 2.0",
+      tag: "ui",
+      title: "Shiftmaker: auto-generate weekly patterns for all waiters",
+      body: "New 'Generator rasporeda' button in Admin → Postavke opens the Shiftmaker modal.\n\nOwner sets:\n• Min. staff per shift (1–6, default 2)\n• Days per week per waiter (0–7, pre-filled from existing pattern)\n\nThe generator:\n1. Detects each waiter's preferred shift type from their current pattern (dominant of m/s/a)\n2. Spreads the requested days across Mon-Sat (randomised) plus Sun as a last resort\n3. Sundays are always assigned morning (Shift I)\n4. Runs a coverage pass — if any day+shift falls below the minimum, reassigns one available waiter from a different shift on that day\n5. Applies the new patterns immediately; owner can still edit individual cells in Admin → Raspored\n\nResult appears as a toast 'Raspored generiran ✓' and the admin schedule refreshes.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-2-1-owner-home-polish",
+      phase: "build",
+      version: "Build 2.1",
+      versionDate: "27 Jun 2026",
+      tag: "ui",
+      title: "Owner home: pending on top, all 3 shifts always shown, week count badge, hours collapsible",
+      body: "Four refinements to the owner Home tab based on first-look feedback:\n\n• Pending requests card moved to the very top — most urgent item first; only renders when there are actual requests (disappears when clear)\n• Today's coverage now always shows all 3 shifts (I / II / III) even when nobody is scheduled — empty shifts show '—' with a red 0 pill so the owner sees the gap explicitly, not silence\n• Week strip dots replaced with a number showing the minimum staff count across all shifts that day — the number is red (0), amber (1), or green (2+). Explains at a glance which specific days have a bottleneck and by how much\n• Sati — Lipanj section is now a collapsible <details> element, collapsed by default — keeps the page compact; click the header to expand all 6 waiters",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-2-1-owner-month",
+      phase: "build",
+      version: "Build 2.1",
+      tag: "ui",
+      title: "Owner month view: team coverage calendar",
+      body: "The Mjesečni raspored tab now shows a different view when the owner is logged in.\n\nInstead of a personal shift calendar, the owner sees a team coverage calendar:\n• Each day cell contains a 3-segment horizontal bar (I | II | III)\n• Each segment is color-coded: green = ≥2 staff, amber = 1 staff, red = 0 staff\n• Sunday cells show only the single I segment (morning only)\n• A legend below the calendar explains the color coding\n\nThe waiter personal calendar is unchanged.",
+      why: "The owner has no personal shifts to display. A team-level month view lets them spot staffing problems weeks ahead without opening the schedule editor.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-2-4-owner-home-restructure",
+      phase: "build",
+      version: "Build 2.4",
+      versionDate: "28 Jun 2026",
+      tag: "ui",
+      title: "Owner home: 3-segment layout — pending, gap days, working hours",
+      body: "Restructured the owner home tab into three clear segments:\n\n1. Pending requests — top, amber card, only visible when action is needed\n2. Dani bez pokrivenosti — next 7 days where any shift has 0 staff; each row is tappable and opens a day detail bottom sheet; shows a green 'all clear' message when no gaps exist\n3. Radni sati — renamed from 'Sati — Lipanj'; open by default with collapse ability; shows all employees with progress bars\n\nRemoved the date label (no functional value).",
+      date: "28 Jun 2026"
+    },
+    {
+      id: "build-2-4-week-opacity",
+      phase: "build",
+      version: "Build 2.4",
+      tag: "ui",
+      title: "Tjedan: full opacity chips for owner, remove Otvoreni zahtjev legend",
+      body: "In the week grid, employee chips were previously shown at 28% opacity for anyone who wasn't the logged-in waiter. For the owner view (no personal shifts), all chips now render at full opacity. The per-waiter fading is preserved for waiter logins.\n\nRemoved the 'Otvoreni zahtjev' legend entry from the week tab — the gap-chip indicator in cells is self-explanatory.",
+      date: "28 Jun 2026"
+    },
+    {
+      id: "build-2-4-day-detail",
+      phase: "build",
+      version: "Build 2.4",
+      tag: "ui",
+      title: "Month tab + gap days: tappable day detail bottom sheet",
+      body: "Every day cell in the monthly calendar (both owner and waiter views) is now tappable. Tapping opens a bottom sheet showing:\n• Day and date as title\n• One row per shift (I / II / III) with who is working, their time range, and a coverage pill (green/amber/red)\n• Approved days-off are excluded from the count\n• Sunday shows only Shift I\n\nGap day rows in the owner home tab also open this same bottom sheet directly.",
+      date: "28 Jun 2026"
+    },
+    {
+      id: "build-2-4-shiftmaker-v2",
+      phase: "build",
+      version: "Build 2.4",
+      tag: "ui",
+      title: "Shiftmaker v2: per-shift controls, preferred shift per waiter, Sunday toggle",
+      body: "Rebuilt the Generator rasporeda modal with more granular controls:\n\nSmjene section:\n• Each shift (I / II / III) has an enable/disable checkbox — disabling a shift removes it from generation entirely (e.g. disable II to run a lean week without Međusmjena)\n• Each enabled shift has its own min staff stepper (independent, not global)\n\nNedjelja toggle:\n• On = Sundays only generate Shift I (morning); Off = Sundays can receive any enabled shift\n\nKonobari section:\n• Days/week stepper per waiter (pre-filled from current pattern)\n• Preferred shift selector: Auto (detect from pattern) / I / II / III — if the preferred shift is disabled, falls back to next available enabled shift\n\nGenerator respects all settings during the coverage pass.",
+      date: "28 Jun 2026"
+    },
+    {
+      id: "build-2-2-week-summary",
+      phase: "build",
+      version: "Build 2.2",
+      versionDate: "27 Jun 2026",
+      tag: "ui",
+      title: "Owner home: week strip replaced with plain-text summary card",
+      body: "Replaced the 7-chip week strip with a single tappable summary line.\n\nThe card shows one of three messages depending on the week state:\n• Green dot — 'Svi dani ovog tjedna su dobro pokriveni'\n• Amber dot — 'X dana s punom pokrivenošću, Y djelomično'\n• Red dot — 'X dana bez pokrivenosti ovaj tjedan'\n\nTapping the card opens the Mjesečni raspored tab where the owner can see exactly which days and shifts have a gap.\n\nAlso fixed: the month tab was previously hidden for the owner — it now shows for both owner and waiters (rendering the team coverage calendar for the owner).",
+      why: "The chip strip required visual decoding and the user couldn't immediately understand what the numbers meant. A single sentence with a color dot is self-explanatory.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-2-3-remove-today-card",
+      phase: "build",
+      version: "Build 2.3",
+      versionDate: "28 Jun 2026",
+      tag: "ui",
+      title: "Owner home: removed today's shift coverage card",
+      body: "Removed the 'today's coverage' section (3 rows showing who works each shift today) from the owner home tab. The owner knows their team's day-to-day situation without needing a digital reminder. The home tab now shows: pending requests (if any) → date label → week summary → hours collapsible.",
+      why: "The card took too much space and the owner said day-to-day staffing is already known personally.",
+      date: "28 Jun 2026"
+    },
+    {
+      id: "build-2-5-polish",
+      phase: "build",
+      version: "Build 2.5",
+      versionDate: "28 Jun 2026",
+      tag: "ui",
+      title: "Cross-tab polish: Odjava everywhere, Zamjene approvals, Shiftmaker v3, modal fixes",
+      body: "A broad set of polish changes across all tabs:\n\nSvi tabovi:\n• Odjava button added to all tab headers (Zamjene, Tjedan, Miesec, Admin) to match Home\n\nPočetna:\n• Pending requests card now has a section label 'Zahtjevi na čekanju' above it, visually consistent with other sections\n\nZamjene:\n• Admin sees Otvorene | Na čekanju | Pokrivene — the 'Na čekanju' filter shows pending_approval requests with inline Approve/Reject buttons\n• Waiter sees Otvorene | Moje | Pokrivene — unchanged\n• After approve/reject the Zamjene tab refreshes in place (no redirect to Admin)\n\nAdmin:\n• 'Na čekanju odobrenja' section removed — approvals moved to Zamjene tab\n\nGenerator rasporeda (Shiftmaker v3):\n• Nedjelja 3-way selector: Zatvoreno / Samo Jutro / Cijeli dan (replaces binary toggle)\n• 'Generiraj za' weeks stepper (1–8 weeks, default 4)\n• Default days per waiter changed from 5 to 6\n• Generator now writes to STATE.dateSchedule[iso][waiterId] instead of modifying the weekly pattern — actual calendar dates are assigned, not a repeating template\n• worksShift() checks dateSchedule overrides first, falls back to weekly pattern\n• After generation, 'Obavijesti konobare' section appears with per-waiter WhatsApp buttons pre-filling each waiter's shift list for the generated period\n\nModals:\n• Swipe-down to dismiss is now generic — works for all modal overlays including day detail and shiftmaker",
+      date: "28 Jun 2026"
+    },
+    {
+      id: "build-2-6-generator-fix",
+      phase: "build",
+      version: "Build 2.6",
+      versionDate: "27 Jun 2026",
+      tag: "fix",
+      title: "Generator: coverage bug fix + full-month mode",
+      body: "Two changes to the shift generator:\n\n1. Bug fix — coverage pass now assigns waiters to specific shifts, not just working days. Previously, if all waiters preferred the same shift (e.g. all prefer Jutro), the other shifts would get 0 staff even though minimums required 2. The new assignShiftsForDay() function first assigns everyone their preferred shift, then steals workers from over-staffed shifts to fill under-staffed ones. The weekly pattern of working days is still respected; only the shift assignment within a day changes.\n\n2. Full-month mode — 'Generiraj za' now has a Tjedni / Cijeli mjesec toggle. In month mode, a stepper lets you pick any month (0–12 months ahead). The generator runs for every calendar day of that month. Weeks stepper extended to max 12.",
+      why: "Bug meant shift distribution was broken whenever preferences were skewed. Month mode is a common real-world scheduling unit.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-2-7-polish",
+      phase: "build",
+      version: "Build 2.7",
+      versionDate: "27 Jun 2026",
+      tag: "ui",
+      title: "Početna polish, month coverage colors, vacation planning, per-Sunday settings",
+      body: "Five improvements across home tab, month tab, and admin:\n\nPočetna — Dani bez pokrivenosti:\n• Expanded window from 7 to 14 days\n• Collapsed mode shows only the next 3 issues; a '▾ Prikaži sve (N)' button expands to all within the 14-day window\n\nPočetna — Radni sati:\n• Month name now shown in the collapsible header (e.g. 'Radni sati — Lipanj')\n• Left/right arrows navigate up to 3 months back and 3 months ahead, recalculating hours for the selected month in real time\n\nMjesec tab — coverage colors:\n• Changed 1-staff coverage color from amber/orange to yellow (#eab308) — traffic-light logic is now clearer: green = ≥2, yellow = 1, red = 0\n\nAdmin — vacation planning:\n• Each waiter object now has a vacations: [{from, to}] array\n• Vacation date ranges are added/removed inside the waiter edit modal (Godišnji odmor section)\n• worksShift() returns false for vacation dates; calcWaiterHours() automatically excludes them; the shift generator skips vacation days when assigning working days\n\nAdmin — Nedjelja settings (Shiftmaker):\n• Replaced inline 3-way selector with a 'Postavi ▸' button that opens a dedicated modal\n• Modal lists every Sunday in the generated period; each has Ne radi / Samo I / Sve smjene option\n• Global default at the top of the modal applies to all unset Sundays; individual Sundays can override it\n• Summary label below the button shows current config (e.g. '3× Samo Jutro, 1× Zatvoreno')",
+      why: "Home tab needed better gap coverage and more useful hours navigation. Yellow is visually clearer than amber for a single-waiter warning. Vacation planning is required for accurate generator output. Per-Sunday control lets the owner mark holiday Sundays without affecting the rest.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-2-8-visual-polish",
+      phase: "build",
+      version: "Build 2.8",
+      versionDate: "27 Jun 2026",
+      tag: "ui",
+      title: "Visual polish: gap arrow, hours chevron, month legend, Nedjelja button, Generiraj layout",
+      body: "Six visual fixes across home tab, month tab, and admin shiftmaker:\n\n• Dani bez pokrivenosti: removed bottom expand bar, moved expand control to the section label itself — 'DANI BEZ POKRIVENOSTI ▾' is now the toggle. Cleaner, less intrusive.\n\n• Radni sati: removed far-right CSS ::after chevron. Collapse arrow now appears immediately after the month name inline: 'Radni sati — Lipanj ▾'. Left/right month nav arrows are on either side.\n\n• Mjesec tab: shift-identity color bars (orange/blue/purple lines next to I, II, III) in the legend are hidden for admin via visibility:hidden on enterApp(). Admin sees coverage-based colors on the calendar; the shift-color legend is irrelevant to them. Waiter login restores them.\n\n• Nedjelja button: removed the ▸ arrow from 'Postavi ▸' — it was implying a dropdown. Button now just reads 'Postavi'.\n\n• Zadano za sve (Sunday modal): moved label above the 3 buttons, buttons are taller pill style with more padding. No longer cramped inside a sm-toggle-row.\n\n• Generiraj za: removed sm-toggle-row (label-left / content-right split). Replaced with a full-width block: label above, mode selector full-width below, stepper centered below that. Clean vertical stack.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-2-9-scroll-align",
+      phase: "build",
+      version: "Build 2.9",
+      versionDate: "27 Jun 2026",
+      tag: "ui",
+      title: "Home scroll, Radni sati alignment, month legend hidden for admin, Generiraj label",
+      body: "Four more polish fixes:\n\n• Početna scroll: home tab is now fully scrollable for admin — expanding 'Dani bez pokrivenosti' pushes Radni sati down and the whole screen scrolls. Fixed by giving .tab-content flex:1/min-height:0 and making #home-body overflow-y:auto instead of overflow:hidden.\n\n• Radni sati alignment: section text is now left-aligned like all other section labels. Month navigation arrows (◀ ▶) moved to the right side, framed with a border for easy tap targeting.\n\n• Mjesec tab: entire shift legend (I/II/III + hours) hidden for admin — not just the color bars. Admin's calendar shows coverage-based coloring; the shift legend only makes sense in waiter view. Restored on logout.\n\n• Generiraj za label: replaced custom sm-generiraj-label with standard form-label class — now visually consistent with 'Smjene' and 'Konobari' labels in the same modal.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-3-0-owner-profile-and-invite",
+      phase: "build",
+      version: "Build 3.0",
+      versionDate: "27 Jun 2026",
+      tag: "ui",
+      title: "Owner profile, waiter phone numbers, invite flow, section row defaults, text fixes",
+      body: "Seven changes in one build:\n\n• Owner profile: hardcoded OWNER_PIN/OWNER_PHONE/OWNER_EMAIL constants replaced with STATE.owner object (name, PIN, phone, businessName, appUrl). New 'Profil vlasnika' row in Admin Postavke opens a modal to edit all five fields. Owner name now shows dynamically everywhere (login screen, home greeting).\n\n• Waiter phone numbers: phone field added to waiter edit modal. Stored as waiter.phone. Shown in admin staff row subtitle.\n\n• Invite button: each waiter row in Admin now has a 💬 button. Tapping opens a pre-filled WhatsApp invite message — goes directly to waiter's number if phone is set, falls back to generic picker. Message includes their name, PIN, and app URL (if configured).\n\n• Direct schedule notifications: WhatsApp 'Obavijesti' buttons in the generator now send directly to the waiter's number when phone is stored — no manual contact selection needed.\n\n• Header greeting font size: 'Vlasnik' (and waiter names) in the home tab header now match other tab headers — switched from hardcoded font-size:14px to .header-title class (17px).\n\n• Section row defaults: 'Dani bez pokrivenosti' default from 3 rows → 5. 'Radni sati' limited to 5 by default with expand/collapse toggle matching same pattern as gap section.\n\n• Text casing fix: 'Samo Jutro' → 'samo jutro' and 'Cijeli dan' → 'cijeli dan' in nedjelja summary text.",
+      date: "27 Jun 2026"
+    },
+    {
+      id: "build-3-1-admin-polish-pin-fix",
+      phase: "build",
+      version: "Build 3.1",
+      versionDate: "28 Jun 2026",
+      tag: "ui",
+      title: "Admin restructure, PIN privacy, section collapse to 4, short schedule messages",
+      body: "Five changes:\n\n• Admin tab restructure: 'Generator rasporeda' moved out of Postavke into its own section labeled 'Raspored', giving it the same first-class visual weight as 'Konobari'. Postavke now contains only: Vodič, Profil vlasnika, Odjava — in that order.\n\n• PIN screen privacy: names no longer appear as digits are typed. The name preview (prefix-matching while you type) is removed. Name only shows for a brief moment after all 4 digits are entered and the PIN matches — then the app opens immediately.\n\n• Section collapse unified to 4 rows: both 'Dani bez pokrivenih smjena' and 'Radni sati' now show 4 rows collapsed, expand to show all.\n\n• Section renamed: 'Dani bez pokrivenosti' → 'Dani bez pokrivenih smjena'.\n\n• Schedule notification messages shortened: instead of listing every shift on every day, the WhatsApp message now reads 'Tvoj raspored za [period] je spreman. Provjeri detalje u aplikaciji.' — with business name and app URL appended if configured in owner profile.",
+      date: "28 Jun 2026"
+    },
+    {
+      id: "build-3-2-bugfix-review",
+      phase: "build",
+      version: "Build 3.2",
+      versionDate: "28 Jun 2026",
+      tag: "fix",
+      title: "Full review: 5 bugs fixed",
+      body: "Five issues found and fixed during full code review:\n\n• Calendar blind spot (međusmjena): The 'request time off' calendar only detected jutro and popodne when deciding if a day was a workday. A waiter who works only međusmjena on a given day would see those days as off-days and couldn't request them off. Fixed by including međusmjena in the worksDay check.\n\n• Shift picker (međusmjena): The shift picker never disabled the međusmjena option even when the waiter doesn't work it. A waiter could submit a request for a shift they're not scheduled for. Fixed by adding the missing disable check.\n\n• Schedule generator month floor: The month stepper in the generator could go to offset 0 (current month), letting you generate over already-passed days. Minimum offset clamped to 1 (next month).\n\n• Dead code removed: previewPin() — the prefix-match-while-typing function removed in Build 3.1 was still declared but never called. Removed.\n\n• Dead code removed: renderAdminApprovals() — leftover from an older admin layout that referenced a #admin-approvals element no longer in the DOM. Removed.",
+      date: "28 Jun 2026"
+    },
+    {
+      id: "build-3-3-gap-collapse-team-rename",
+      phase: "build",
+      version: "Build 3.3",
+      versionDate: "28 Jun 2026",
+      tag: "ui",
+      title: "Gap section collapse matches Radni sati; Konobari → Tim",
+      body: "Two changes:\n\n• 'Dani bez pokrivenih smjena' section now works identically to 'Radni sati': clicking the header label collapses the entire section (native <details>/<summary>), and the 4→all expand uses a 'Prikaži sve (N)' row at the bottom of the card. Previously the header click was the only toggle and the section never fully collapsed.\n\n• All instances of 'Konobari'/'Konobar'/'Konobarice' replaced with gender-neutral 'Tim'/'član'/'člana'. Affects: Admin section label, 'Dodaj člana' button and modal, toasts, shiftmaker labels, week-view legend, onboarding guide.",
+      date: "28 Jun 2026"
+    },
+    {
+      id: "build-3-4-badge-fix",
+      phase: "build",
+      version: "Build 3.4",
+      versionDate: "28 Jun 2026",
+      tag: "fix",
+      title: "Badge moved from Admin to Zamjene for pending approvals",
+      body: "The Admin tab was showing a badge count for pending approvals, but there is no approval UI in Admin — approvals happen in the Zamjene tab under 'Na čekanju'. Badge logic corrected: owner now sees the pending_approval count on the Zamjene tab (where the action actually is). Admin badge permanently removed. Waiter badge behavior unchanged — still shows open requests they can volunteer to cover.",
+      date: "28 Jun 2026"
+    },
+    {
+      id: "build-3-5-phase-a-pwa",
+      phase: "build",
+      version: "Build 3.5",
+      versionDate: "28 Jun 2026",
+      tag: "feature",
+      title: "Phase A: localStorage persistence + PWA install",
+      body: "Data now survives page refresh and browser close. saveState() persists waiters, owner, requests, dateSchedule, and theme to localStorage on every mutation. loadState() restores them on startup. New files: manifest.json (PWA install manifest), sw.js (cache-first service worker for offline support), icon-192.svg and icon-512.svg (home screen icons). The app can now be installed to a phone home screen via 'Add to Home Screen' in Chrome/Safari.",
+      why: "Phase A of the startup validation path: deploy the existing app with persistence so the owner's team can use it across sessions without losing data.",
+      date: "28 Jun 2026"
+    }
+  ];
+  </script>
+  <!-- ============================================================
+       END CHANGELOG DATA — do not edit anything below this line
+       ============================================================ -->
+
+  <style>
+    :root {
+      --espresso:   #1a1008;
+      --roast:      #3b1f0a;
+      --crema:      #c8933a;
+      --steam:      #e8d5b0;
+      --milk:       #f5efe3;
+      --chalk:      #fdfaf5;
+      --muted:      #7a6248;
+      --rule:       #ddd0b8;
+
+      --plan-bg:    #eef6f0;
+      --plan-acc:   #2d6a4f;
+      --plan-dot:   #52b788;
+
+      --build-bg:   #eef1fa;
+      --build-acc:  #1d3a8a;
+      --build-dot:  #4a6cf7;
+
+      --tag-decision-bg:  #fef9ec; --tag-decision-fg: #8a5a00;
+      --tag-scope-bg:     #fdf0f0; --tag-scope-fg:    #8a1a1a;
+      --tag-ui-bg:        #f0f4fe; --tag-ui-fg:       #1a3d8a;
+      --tag-fix-bg:       #f0faf4; --tag-fix-fg:      #1a6a3a;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--chalk);
+      color: var(--espresso);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--espresso);
+      padding: 40px 20px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -40px; right: -40px;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(200,147,58,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .header-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--crema);
+      opacity: 0.75;
+      margin-bottom: 8px;
+    }
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 30px;
+      font-weight: 600;
+      color: var(--steam);
+      line-height: 1.15;
+    }
+    header h1 span { color: var(--crema); }
+    .header-sub {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 6px;
+    }
+    .header-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .pill {
+      background: rgba(200,147,58,0.12);
+      border: 1px solid rgba(200,147,58,0.22);
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--steam);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Container ── */
+    .container {
+      padding: 28px 16px 64px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* ── Legend ── */
+    .legend {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 32px;
+      padding: 14px;
+      background: var(--milk);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── Phase section ── */
+    .phase { margin-bottom: 40px; }
+
+    .phase-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1.5px solid var(--rule);
+    }
+    .phase-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 3px;
+    }
+    .phase-badge.plan  { background: var(--plan-bg);  color: var(--plan-acc);  border: 1px solid #b7dfc9; }
+    .phase-badge.build { background: var(--build-bg); color: var(--build-acc); border: 1px solid #c0cefc; }
+    .phase-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--roast);
+    }
+
+    /* ── Version label ── */
+    .version-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      margin: 20px 0 10px 2px;
+    }
+    .version-label:first-of-type { margin-top: 0; }
+
+    /* ── Entry card ── */
+    .entry {
+      position: relative;
+      background: white;
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      padding: 16px 16px 16px 40px;
+      margin-bottom: 10px;
+    }
+    .entry::before {
+      content: '';
+      position: absolute;
+      left: 14px;
+      top: 20px;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--rule);
+    }
+    .phase-plan  .entry::before { background: var(--plan-dot); }
+    .phase-build .entry::before { background: var(--build-dot); }
+
+    .entry-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .entry-title {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--espresso);
+      line-height: 1.35;
+      flex: 1;
+    }
+    .entry-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .entry-date {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    /* ── Tags ── */
+    .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    .tag.decision { background: var(--tag-decision-bg); color: var(--tag-decision-fg); }
+    .tag.scope    { background: var(--tag-scope-bg);    color: var(--tag-scope-fg); }
+    .tag.ui       { background: var(--tag-ui-bg);       color: var(--tag-ui-fg); }
+    .tag.fix      { background: var(--tag-fix-bg);      color: var(--tag-fix-fg); }
+
+    /* ── Entry body ── */
+    .entry-body {
+      font-size: 13px;
+      color: #3d2e1e;
+      line-height: 1.65;
+      white-space: pre-line;
+    }
+    .why-block {
+      margin-top: 10px;
+      padding: 8px 10px;
+      background: var(--milk);
+      border-left: 3px solid var(--crema);
+      border-radius: 0 4px 4px 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .why-block strong { color: var(--roast); }
+
+    /* ── Placeholder (build phase empty) ── */
+    .entry.placeholder {
+      opacity: 0.38;
+      pointer-events: none;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 24px 16px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--rule);
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.04em;
+    }
+    #last-updated { color: var(--crema); }
+  </style>
+</head>
+<body>
+
+<header>
+  <p class="header-eyebrow">Project Log</p>
+  <h1>Zamijeni<span>Me</span></h1>
+  <p class="header-sub">Shift swap &amp; day-off calendar for coffee shop teams</p>
+  <div class="header-pills">
+    <span class="pill">Started: 26 Jun 2026</span>
+    <span class="pill" id="status-pill">Status: Planning</span>
+    <span class="pill">Stack: HTML Artifact + Storage API</span>
+    <span class="pill">Mobile-only</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="legend">
+    <div class="legend-item"><span class="tag decision">Decision</span> Why it's this way</div>
+    <div class="legend-item"><span class="tag scope">Scope</span> Features in/out</div>
+    <div class="legend-item"><span class="tag ui">UI</span> Flow or interface</div>
+    <div class="legend-item"><span class="tag fix">Fix</span> Bug or correction</div>
+  </div>
+
+  <div id="root"></div>
+
+</div>
+
+<footer>
+  zamijeni me · project log · last updated <span id="last-updated"></span>
+</footer>
+
+<script>
+  // ── Render engine — do not edit ──────────────────────────────
+
+  function groupEntries(entries) {
+    const phases = { plan: {}, build: {} };
+    entries.forEach(e => {
+      const p = e.phase;
+      const v = e.version;
+      if (!phases[p][v]) phases[p][v] = { date: e.versionDate || '', entries: [] };
+      phases[p][v].entries.push(e);
+    });
+    return phases;
+  }
+
+  function renderTag(tag) {
+    return `<span class="tag ${tag}">${tag}</span>`;
+  }
+
+  function renderEntry(e, phaseClass) {
+    const why = e.why
+      ? `<div class="why-block"><strong>Why:</strong> ${e.why}</div>`
+      : '';
+    return `
+      <div class="entry">
+        <div class="entry-header">
+          <span class="entry-title">${e.title}</span>
+          <div class="entry-meta">
+            ${renderTag(e.tag)}
+            <span class="entry-date">${e.date}</span>
+          </div>
+        </div>
+        <div class="entry-body">${e.body}${why}</div>
+      </div>`;
+  }
+
+  function renderPhase(phaseKey, label, versions) {
+    const versionKeys = Object.keys(versions);
+    if (phaseKey === 'build' && versionKeys.length === 0) {
+      return `
+        <div class="phase phase-build">
+          <div class="phase-header">
+            <span class="phase-badge build">Build</span>
+            <span class="phase-title">${label}</span>
+          </div>
+          <div class="entry placeholder">
+            <div class="entry-header">
+              <span class="entry-title">Build log starts here once development begins</span>
+              <div class="entry-meta"><span class="tag ui">UI</span><span class="entry-date">—</span></div>
+            </div>
+            <div class="entry-body">Entries will be added as Build 1, Build 1.1, Build 1.2 etc.</div>
+          </div>
+        </div>`;
+    }
+
+    let html = `<div class="phase phase-${phaseKey}">
+      <div class="phase-header">
+        <span class="phase-badge ${phaseKey}">${phaseKey.charAt(0).toUpperCase() + phaseKey.slice(1)}</span>
+        <span class="phase-title">${label}</span>
+      </div>`;
+
+    versionKeys.forEach(v => {
+      const vd = versions[v];
+      const dateStr = vd.date ? ` · ${vd.date}` : '';
+      html += `<div class="version-label">${v}${dateStr}</div>`;
+      vd.entries.forEach(e => { html += renderEntry(e, phaseKey); });
+    });
+
+    html += `</div>`;
+    return html;
+  }
+
+  function render() {
+    const grouped = groupEntries(ENTRIES);
+    const root = document.getElementById('root');
+    root.innerHTML =
+      renderPhase('plan',  'Planning &amp; Scope', grouped.plan) +
+      renderPhase('build', 'Build Log',            grouped.build);
+
+    // last updated = most recent entry date
+    const lastEntry = ENTRIES[ENTRIES.length - 1];
+    document.getElementById('last-updated').textContent = lastEntry.date;
+
+    // status pill: switch to "Building" once any build entry exists
+    const hasBuild = ENTRIES.some(e => e.phase === 'build');
+    document.getElementById('status-pill').textContent =
+      hasBuild ? 'Status: Building' : 'Status: Planning';
+  }
+
+  render();
+</script>
+</body>
+</html>
