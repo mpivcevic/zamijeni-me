@@ -856,6 +856,17 @@
       body: "WhatsApp message now reads naturally based on the waiter's actual scheduled shift and their can-cover selection. Uses Croatian accusative forms: jutarnju smjenu, međusmjenu, popodnevnu smjenu. Single scheduled shift: 'Može zamijeniti jutarnju smjenu za popodnevnu smjenu.' Multiple scheduled shifts: 'Može pokriti: jutarnju smjenu.' No can-cover selected: message stays as 'traži slobodan dan [datum].'",
       why: "Previous message said 'Može zamijeniti za: Jutro ili Međusmjena' — generic and unnatural. Owner reads these messages on the go and needs to understand the situation instantly.",
       date: "28 Jun 2026"
+    },
+    {
+      id: "build-4-8-owner-badge-fix",
+      phase: "build",
+      version: "Build 4.8",
+      versionDate: "28 Jun 2026",
+      tag: "fix",
+      title: "Owner badge and home card miss new waiter requests",
+      body: "updateBadges() and renderOwnerHome() both filtered only status='pending_approval' (waiter covered, owner must approve). Fresh waiter requests arrive as status='open' and were completely invisible to the owner — no badge, no card. Fixed both to include open+pending_approval. Home card label now adapts: '1 novi zahtjev', '2 nova, 1 čeka odobrenje', or 'X zahtjeva čeka odobrenje' depending on the mix.",
+      why: "Owner had no way to know a waiter submitted a request until someone else volunteered to cover it — defeating the entire notification purpose.",
+      date: "28 Jun 2026"
     }
   ];
   </script>
