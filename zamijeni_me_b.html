@@ -405,8 +405,8 @@ details[open] .hours-chevron::before{content:'▴';}
 .cal-nav-btn:active{background:var(--border);}
 .shift-picker{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
 .shift-picker-row{display:flex;gap:8px;}
-.shift-option{flex:1;padding:10px 6px;border-radius:var(--radius);border:2px solid var(--border);background:var(--surface);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500;color:var(--text-2);transition:all 0.15s;cursor:pointer;}
-.shift-option .shift-icon{font-size:15px;font-weight:800;letter-spacing:0.01em;}
+.shift-option{flex:1;padding:6px 4px;border-radius:var(--radius);border:2px solid var(--border);background:var(--surface);display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;font-weight:500;color:var(--text-2);transition:all 0.15s;cursor:pointer;}
+.shift-option .shift-icon{font-size:13px;font-weight:800;letter-spacing:0.01em;}
 .shift-option.selected{border-color:var(--accent);background:var(--accent-light);color:var(--accent);}
 .shift-option:active{transform:scale(0.97);}
 .shift-option.disabled{opacity:0.3;pointer-events:none;}
@@ -1930,15 +1930,20 @@ function renderReqShiftSection() {
   if (reqCantWork.size === 0) myShifts.forEach(s => reqCantWork.add(s));
   const shiftIcon = s => s === 'jutro' ? 'I' : s === 'međusmjena' ? 'II' : 'III';
   const shiftName = s => s === 'jutro' ? 'Jutro' : s === 'međusmjena' ? 'Međusmjena' : 'Popodne';
+  const allCantSelected = myShifts.every(s => reqCantWork.has(s));
   cantPicker.innerHTML = myShifts.map(s =>
     `<div class="shift-option req-cant-opt${reqCantWork.has(s)?' selected':''}" data-shift="${s}"><span class="shift-icon">${shiftIcon(s)}</span>${shiftName(s)}</div>`
-  ).join('');
+  ).join('') + `<div class="shift-option req-cant-all${allCantSelected?' selected':''}"><span class="shift-icon">📅</span>Cijeli dan</div>`;
   cantPicker.querySelectorAll('.req-cant-opt').forEach(opt => {
     opt.addEventListener('click', () => {
       const s = opt.dataset.shift;
-      if (reqCantWork.has(s)) reqCantWork.delete(s); else reqCantWork.add(s);
+      if (reqCantWork.has(s) && reqCantWork.size > 1) reqCantWork.delete(s); else reqCantWork.add(s);
       renderReqShiftSection();
     });
+  });
+  cantPicker.querySelector('.req-cant-all').addEventListener('click', () => {
+    myShifts.forEach(s => reqCantWork.add(s));
+    renderReqShiftSection();
   });
   if (otherShifts.length > 0) {
     canPicker.innerHTML = otherShifts.map(s =>
