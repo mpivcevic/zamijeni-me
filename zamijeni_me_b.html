@@ -836,12 +836,8 @@ details[open] .hours-chevron::before{content:'▴';}
     </div>
     <div class="calendar-grid" id="req-calendar"></div>
     <div id="req-shift-section" style="display:none;margin-bottom:16px;">
-      <div class="req-section-label">Ne mogu raditi:</div>
-      <div class="shift-picker-row" id="req-cant-work-picker"></div>
-      <div id="req-can-cover-wrap" style="display:none;margin-top:12px;">
-        <div class="req-section-label">Mogu zamijeniti za: <span style="font-weight:400;text-transform:none;letter-spacing:0;">(neobavezno)</span></div>
-        <div class="shift-picker-row" id="req-can-cover-picker"></div>
-      </div>
+      <div class="req-section-label">Mogu zamijeniti za: <span style="font-weight:400;text-transform:none;letter-spacing:0;">(neobavezno)</span></div>
+      <div class="shift-picker-row" id="req-can-cover-picker"></div>
     </div>
     <textarea class="note-input" id="req-note" placeholder="Napomena (neobavezno)..." rows="2"></textarea>
     <button class="btn-primary" id="btn-submit-request">Pošalji zahtjev</button>
@@ -1853,13 +1849,11 @@ function renderMyShifts() {
 // ══════════════════════════════════════════════════════════
 let reqCalDate = new Date();
 let reqSelectedDate = null;
-let reqCantWork = new Set();
 let reqCanCover = new Set();
 
 function openRequestModal() {
   reqCalDate = new Date();
   reqSelectedDate = null;
-  reqCantWork = new Set();
   reqCanCover = new Set();
   document.getElementById('req-note').value = '';
   document.getElementById('req-notify-bar').style.display = 'none';
@@ -1906,75 +1900,45 @@ function renderReqCalendar() {
   }
   cal.innerHTML = html;
   cal.querySelectorAll('.cal-day:not(.empty):not(.past):not(.off-day)').forEach(el => {
-    el.addEventListener('click', () => { reqSelectedDate = el.dataset.iso; reqCantWork = new Set(); reqCanCover = new Set(); renderReqCalendar(); renderReqShiftSection(); });
+    el.addEventListener('click', () => { reqSelectedDate = el.dataset.iso; reqCanCover = new Set(); renderReqCalendar(); renderReqShiftSection(); });
   });
 }
 
 function renderReqShiftSection() {
   const w = currentWaiter();
   const section = document.getElementById('req-shift-section');
-  const cantPicker = document.getElementById('req-cant-work-picker');
-  const canWrap = document.getElementById('req-can-cover-wrap');
   const canPicker = document.getElementById('req-can-cover-picker');
   if (!reqSelectedDate || !w) { section.style.display = 'none'; return; }
   const allShifts = ['jutro', 'međusmjena', 'popodne'];
   const dow = dayOfWeek(reqSelectedDate);
   const myShifts = allShifts.filter(s => !(s === 'popodne' && dow === 6) && worksShift(w, reqSelectedDate, s));
   const otherShifts = allShifts.filter(s => !(s === 'popodne' && dow === 6) && !myShifts.includes(s));
-  if (myShifts.length === 0) {
-    section.style.display = 'block';
-    cantPicker.innerHTML = '<div style="color:var(--text-2);font-size:13px;padding:8px 0;">Nisi na rasporedu taj dan.</div>';
-    canWrap.style.display = 'none';
-    return;
-  }
-  if (reqCantWork.size === 0) myShifts.forEach(s => reqCantWork.add(s));
+  if (otherShifts.length === 0) { section.style.display = 'none'; return; }
   const shiftIcon = s => s === 'jutro' ? 'I' : s === 'međusmjena' ? 'II' : 'III';
   const shiftName = s => s === 'jutro' ? 'Jutro' : s === 'međusmjena' ? 'Međusmjena' : 'Popodne';
-  const allCantSelected = myShifts.every(s => reqCantWork.has(s));
-  cantPicker.innerHTML = myShifts.map(s =>
-    `<div class="shift-option req-cant-opt${reqCantWork.has(s)?' selected':''}" data-shift="${s}"><span class="shift-icon">${shiftIcon(s)}</span>${shiftName(s)}</div>`
-  ).join('') + `<div class="shift-option req-cant-all${allCantSelected?' selected':''}"><span class="shift-icon">📅</span>Cijeli dan</div>`;
-  cantPicker.querySelectorAll('.req-cant-opt').forEach(opt => {
+  canPicker.innerHTML = otherShifts.map(s =>
+    `<div class="shift-option req-can-opt${reqCanCover.has(s)?' selected':''}" data-shift="${s}"><span class="shift-icon">${shiftIcon(s)}</span>${shiftName(s)}</div>`
+  ).join('');
+  canPicker.querySelectorAll('.req-can-opt').forEach(opt => {
     opt.addEventListener('click', () => {
       const s = opt.dataset.shift;
-      if (reqCantWork.has(s) && reqCantWork.size > 1) reqCantWork.delete(s); else reqCantWork.add(s);
+      if (reqCanCover.has(s)) reqCanCover.delete(s); else reqCanCover.add(s);
       renderReqShiftSection();
     });
   });
-  cantPicker.querySelector('.req-cant-all').addEventListener('click', () => {
-    myShifts.forEach(s => reqCantWork.add(s));
-    renderReqShiftSection();
-  });
-  if (otherShifts.length > 0) {
-    canPicker.innerHTML = otherShifts.map(s =>
-      `<div class="shift-option req-can-opt${reqCanCover.has(s)?' selected':''}" data-shift="${s}"><span class="shift-icon">${shiftIcon(s)}</span>${shiftName(s)}</div>`
-    ).join('');
-    canPicker.querySelectorAll('.req-can-opt').forEach(opt => {
-      opt.addEventListener('click', () => {
-        const s = opt.dataset.shift;
-        if (reqCanCover.has(s)) reqCanCover.delete(s); else reqCanCover.add(s);
-        renderReqShiftSection();
-      });
-    });
-    canWrap.style.display = 'block';
-  } else {
-    canWrap.style.display = 'none';
-  }
   section.style.display = 'block';
 }
 
 async function submitRequest() {
   if (!reqSelectedDate) { showToast('Odaberi datum'); return; }
-  if (reqCantWork.size === 0) { showToast('Odaberi što ne možeš raditi'); return; }
   const w = currentWaiter();
   const note = document.getElementById('req-note').value.trim();
   const btn = document.getElementById('btn-submit-request');
   btn.disabled = true;
   const allShifts = ['jutro', 'međusmjena', 'popodne'];
   const myShifts = allShifts.filter(s => worksShift(w, reqSelectedDate, s));
-  const cantArr = [...reqCantWork];
+  const shift = myShifts.length === 1 ? myShifts[0] : 'oboje';
   const canArr = [...reqCanCover];
-  const shift = myShifts.every(s => reqCantWork.has(s)) ? 'oboje' : cantArr[0];
   const shiftName = s => s === 'jutro' ? 'Jutro' : s === 'međusmjena' ? 'Međusmjena' : 'Popodne';
   const canCoverNote = canArr.length > 0 ? `[može: ${canArr.map(shiftName).join(', ')}]` : '';
   const fullNote = [canCoverNote, note].filter(Boolean).join(' ');
@@ -1991,14 +1955,8 @@ async function submitRequest() {
   STATE.requests.push(mapRequest(data));
 
   // Build WhatsApp message
-  let msg;
-  if (shift === 'oboje' && canArr.length === 0) {
-    msg = `[ZamijeniMe]\n\n${w.name} traži slobodan dan ${formatDate(reqSelectedDate)}.`;
-  } else if (canArr.length > 0) {
-    msg = `[ZamijeniMe]\n\n${w.name} ne može ${cantArr.map(shiftName).join(' i ')} ${formatDate(reqSelectedDate)}.\nMože zamijeniti za: ${canArr.map(shiftName).join(' ili ')}.`;
-  } else {
-    msg = `[ZamijeniMe]\n\n${w.name} ne može ${cantArr.map(shiftName).join(' i ')} ${formatDate(reqSelectedDate)}.`;
-  }
+  let msg = `[ZamijeniMe]\n\n${w.name} traži slobodan dan ${formatDate(reqSelectedDate)}.`;
+  if (canArr.length > 0) msg += `\nMože zamijeniti za: ${canArr.map(shiftName).join(' ili ')}.`;
   if (note) msg += `\nNapomena: ${note}`;
   const waUrl = `https://wa.me/${STATE.owner.phone||''}?text=${encodeURIComponent(msg)}`;
   document.getElementById('req-notify-bar').innerHTML = `
