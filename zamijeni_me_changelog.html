@@ -834,6 +834,28 @@
       body: "Removed the 'Ne mogu raditi' shift picker from the request modal entirely. Pressing a date already means the waiter can't come to their scheduled shift — confirming it again was pointless friction. The modal now shows only 'Mogu zamijeniti za:' (optional) with the other shifts on that day, plus the note field. Shift value for the DB is inferred automatically from the waiter's schedule (single shift → that shift, multiple → oboje). WhatsApp message unchanged: 'traži slobodan dan [datum]' with optional 'Može zamijeniti za: X.'",
       why: "Owner's insight: pressing the date is already the confirmation. The extra step added no information and slowed down the flow.",
       date: "28 Jun 2026"
+    },
+    {
+      id: "build-4-6-sw-network-first",
+      phase: "build",
+      version: "Build 4.6",
+      versionDate: "28 Jun 2026",
+      tag: "fix",
+      title: "Service worker: network-first for HTML files",
+      body: "Changed sw.js fetch strategy for .html files from cache-first to network-first. HTML always fetches fresh from the network; cache is only used as offline fallback. Static assets (manifest, icons) stay cache-first. Cache bumped to zm-v3. One manual cache clear required after this deploy — all future updates load automatically on next open.",
+      why: "Cache-first was serving stale HTML after every push, requiring users to manually clear site data to see updates. Unacceptable during active testing.",
+      date: "28 Jun 2026"
+    },
+    {
+      id: "build-4-7-natural-swap-message",
+      phase: "build",
+      version: "Build 4.7",
+      versionDate: "28 Jun 2026",
+      tag: "ui",
+      title: "Natural Croatian swap message — zamijeniti jutarnju smjenu za popodnevnu",
+      body: "WhatsApp message now reads naturally based on the waiter's actual scheduled shift and their can-cover selection. Uses Croatian accusative forms: jutarnju smjenu, međusmjenu, popodnevnu smjenu. Single scheduled shift: 'Može zamijeniti jutarnju smjenu za popodnevnu smjenu.' Multiple scheduled shifts: 'Može pokriti: jutarnju smjenu.' No can-cover selected: message stays as 'traži slobodan dan [datum].'",
+      why: "Previous message said 'Može zamijeniti za: Jutro ili Međusmjena' — generic and unnatural. Owner reads these messages on the go and needs to understand the situation instantly.",
+      date: "28 Jun 2026"
     }
   ];
   </script>
