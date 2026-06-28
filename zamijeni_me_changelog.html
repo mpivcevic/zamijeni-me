@@ -823,6 +823,17 @@
       body: "Redesigned the shift request flow. Old flow: waiter picked a shift from a static 4-button picker (Jutro / Međusmjena / Popodne / Cijeli dan). New flow: after picking a date, the modal shows only the shifts the waiter is actually scheduled for that day under 'Ne mogu raditi:' — all pre-selected by default (full day off is the default). A second section 'Mogu zamijeniti za:' shows the OTHER shifts on that day; waiter can optionally tap one to offer a swap. WhatsApp message to owner adapts: full day → 'traži slobodan dan [datum]'; specific shift + swap offer → 'ne može Jutro [datum]. Može zamijeniti za: Međusmjena.'; specific shift only → 'ne može Jutro [datum]'. Swap offer is also stored as a bracketed prefix in the note field ([može: Međusmjena]) so the owner sees it in the admin panel.",
       why: "Owner's real use case: waiter has a doctor appointment in the morning but can work the afternoon. The old picker didn't capture this nuance and defaulted to a full day request.",
       date: "28 Jun 2026"
+    },
+    {
+      id: "build-4-5-request-modal-simplify",
+      phase: "build",
+      version: "Build 4.5",
+      versionDate: "28 Jun 2026",
+      tag: "ui",
+      title: "Request modal: remove Ne mogu raditi — date tap implies it",
+      body: "Removed the 'Ne mogu raditi' shift picker from the request modal entirely. Pressing a date already means the waiter can't come to their scheduled shift — confirming it again was pointless friction. The modal now shows only 'Mogu zamijeniti za:' (optional) with the other shifts on that day, plus the note field. Shift value for the DB is inferred automatically from the waiter's schedule (single shift → that shift, multiple → oboje). WhatsApp message unchanged: 'traži slobodan dan [datum]' with optional 'Može zamijeniti za: X.'",
+      why: "Owner's insight: pressing the date is already the confirmation. The extra step added no information and slowed down the flow.",
+      date: "28 Jun 2026"
     }
   ];
   </script>
