@@ -1660,7 +1660,7 @@ function updateBadges() {
   const swapBadge = document.getElementById('swap-badge');
   document.getElementById('admin-badge').style.display = 'none';
   if (isOwner()) {
-    const n = STATE.requests.filter(r=>r.status==='pending_approval').length;
+    const n = STATE.requests.filter(r=>r.status==='open'||r.status==='pending_approval').length;
     swapBadge.style.display = n ? 'flex' : 'none';
     if (n) swapBadge.textContent = n;
   } else {
@@ -1710,12 +1710,19 @@ function calcWaiterHours(waiter, targetY, targetM) {
 
 function renderOwnerHome() {
   const now = todayDate();
-  const pending = STATE.requests.filter(r=>r.status==='pending_approval');
+  const pending = STATE.requests.filter(r=>r.status==='open'||r.status==='pending_approval');
+  const openCount = pending.filter(r=>r.status==='open').length;
+  const approvalCount = pending.filter(r=>r.status==='pending_approval').length;
+  const pendingLabel = openCount && approvalCount
+    ? `${openCount} novi, ${approvalCount} čeka odobrenje`
+    : openCount
+      ? `${openCount} novi zahtjev${openCount>1?'a':''}`
+      : `${approvalCount} zahtjev${approvalCount>1?'a':''} čeka odobrenje`;
   const pendingCard = pending.length ? `
     <div class="section-label" style="margin-top:0;">Zahtjevi na čekanju</div>
     <div class="owner-pending-card has-pending" id="owner-pending-tap">
       <span class="owner-pending-icon">⏳</span>
-      <span class="owner-pending-text">${pending.length} zahtjev${pending.length>1?'a':''} čeka odobrenje</span>
+      <span class="owner-pending-text">${pendingLabel}</span>
       <span style="color:var(--text-3);">→</span>
     </div>` : '';
 
