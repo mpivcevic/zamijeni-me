@@ -768,6 +768,61 @@
       body: "Data now survives page refresh and browser close. saveState() persists waiters, owner, requests, dateSchedule, and theme to localStorage on every mutation. loadState() restores them on startup. New files: manifest.json (PWA install manifest), sw.js (cache-first service worker for offline support), icon-192.svg and icon-512.svg (home screen icons). The app can now be installed to a phone home screen via 'Add to Home Screen' in Chrome/Safari.",
       why: "Phase A of the startup validation path: deploy the existing app with persistence so the owner's team can use it across sessions without losing data.",
       date: "28 Jun 2026"
+    },
+    {
+      id: "build-4-0-phase-b-supabase",
+      phase: "build",
+      version: "Build 4.0",
+      versionDate: "28 Jun 2026",
+      tag: "feature",
+      title: "Phase B lite: Supabase backend — new file zamijeni_me_b.html",
+      body: "Complete rewrite of the data layer on top of Supabase (free tier, PostgreSQL). Phase A file stays live. New file zamijeni_me_b.html replaces localStorage with Supabase tables: cafes, waiters, shift_requests, date_schedules. Owner auth: email + password via Supabase Auth. Waiter auth: invite link (UUID token) + self-chosen PIN hashed with bcrypt via pgcrypto RPC (set_waiter_pin / verify_waiter_pin). All Phase A UI and CSS ported verbatim — only the data layer changed. Write-through pattern: mutations update in-memory STATE then write to Supabase async. Service worker registered for PWA support. Deployed to GitHub Pages at mpivcevic.github.io/zamijeni-me/zamijeni_me_b.html. SSH remote configured for frictionless git push.",
+      why: "Phase B lite: validate the real product with a real backend and real accounts before investing in push notifications or billing.",
+      date: "28 Jun 2026"
+    },
+    {
+      id: "build-4-1-phone-testing-fixes",
+      phase: "build",
+      version: "Build 4.1",
+      versionDate: "28 Jun 2026",
+      tag: "fix",
+      title: "Phone testing bug fixes: CSS clip, café setup crash, invite UX",
+      body: "Three bugs found during live phone testing. (1) #waiter-home had flex:1;overflow:hidden which clipped the shifts list and prevented scrolling — removed both properties. (2) handleCafeSetup silently crashed when Supabase email confirmation is enabled: signUp returns a user but no session, so getUser() returned null and user.id threw a TypeError. Fixed by storing _pendingSignupUser after signUp and using it in handleCafeSetup. (3) WhatsApp invite link was not tappable because the local IP (192.168.8.110) is not recognised as a URL by WhatsApp — fixed by deploying to GitHub Pages (HTTPS domain auto-linked by WhatsApp).",
+      why: "Discovered on first real phone test session. All three were silent failures with no visible error to the user.",
+      date: "28 Jun 2026"
+    },
+    {
+      id: "build-4-2-whatsapp-invite-message",
+      phase: "build",
+      version: "Build 4.2",
+      versionDate: "28 Jun 2026",
+      tag: "ui",
+      title: "Polish WhatsApp invite message — clean format, no emojis",
+      body: "Iterated on the WhatsApp invite message sent to waiters when the owner generates an invite link. Final format: greeting by first name, one-line context sentence, invite link on its own line, sign-off. No emojis. Uses \\n line breaks encoded as %0A in the wa.me URL so WhatsApp renders each line separately.",
+      why: "Original message arrived as one compressed line with no spacing. Owner needs a message that looks professional and is easy for waiters to act on.",
+      date: "28 Jun 2026"
+    },
+    {
+      id: "build-4-3-sw-cache-bump",
+      phase: "build",
+      version: "Build 4.3",
+      versionDate: "28 Jun 2026",
+      tag: "fix",
+      title: "Service worker cache bump zm-v1 → zm-v2",
+      body: "sw.js caches every GET response including zamijeni_me_b.html. After deploying Build 4.2, phones kept serving the old cached message. Bumped CACHE constant from zm-v1 to zm-v2 so the activate handler deletes the old cache and forces a fresh fetch. Users need a one-time hard refresh or site-data clear; future updates will load automatically.",
+      why: "Cache-first service worker served stale HTML after a code push. Cache version bump is the standard fix.",
+      date: "28 Jun 2026"
+    },
+    {
+      id: "build-4-4-smart-shift-request",
+      phase: "build",
+      version: "Build 4.4",
+      versionDate: "28 Jun 2026",
+      tag: "feature",
+      title: "Smart shift request modal — Ne mogu raditi / Mogu zamijeniti za",
+      body: "Redesigned the shift request flow. Old flow: waiter picked a shift from a static 4-button picker (Jutro / Međusmjena / Popodne / Cijeli dan). New flow: after picking a date, the modal shows only the shifts the waiter is actually scheduled for that day under 'Ne mogu raditi:' — all pre-selected by default (full day off is the default). A second section 'Mogu zamijeniti za:' shows the OTHER shifts on that day; waiter can optionally tap one to offer a swap. WhatsApp message to owner adapts: full day → 'traži slobodan dan [datum]'; specific shift + swap offer → 'ne može Jutro [datum]. Može zamijeniti za: Međusmjena.'; specific shift only → 'ne može Jutro [datum]'. Swap offer is also stored as a bracketed prefix in the note field ([može: Međusmjena]) so the owner sees it in the admin panel.",
+      why: "Owner's real use case: waiter has a doctor appointment in the morning but can work the afternoon. The old picker didn't capture this nuance and defaulted to a full day request.",
+      date: "28 Jun 2026"
     }
   ];
   </script>
