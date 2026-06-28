@@ -1,0 +1,2883 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#2563eb"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-192.svg"/>
+<title>ZamijeniMe</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ── TOKENS ───────────────────────────────────────────── */
+:root {
+  --accent:       #2563eb;
+  --accent-light: #dbeafe;
+  --accent-dark:  #1d4ed8;
+  --danger:       #dc2626;
+  --danger-light: #fee2e2;
+  --success:      #16a34a;
+  --success-light:#dcfce7;
+  --warn:         #d97706;
+  --warn-light:   #fef3c7;
+
+  --bg:           #f8fafc;
+  --surface:      #ffffff;
+  --surface2:     #f1f5f9;
+  --border:       #e2e8f0;
+  --border-strong:#cbd5e1;
+
+  --text:         #0f172a;
+  --text-2:       #475569;
+  --text-3:       #94a3b8;
+
+  --radius:       14px;
+  --radius-sm:    8px;
+  --shadow:       0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:    0 4px 16px rgba(0,0,0,0.10);
+
+  --tab-h:        50px;
+  --header-h:     48px;
+  --month-weekend:#dde5f0;
+
+  --shift-i:       #f97316;
+  --shift-i-light: #fff7ed;
+  --shift-ii:      #0ea5e9;
+  --shift-ii-light:#e0f2fe;
+  --shift-iii:     #7c3aed;
+  --shift-iii-light:#f5f3ff;
+}
+
+[data-theme="dark"] {
+  --month-weekend:#182234;
+  --bg:           #0f172a;
+  --surface:      #1e293b;
+  --surface2:     #263044;
+  --border:       #334155;
+  --border-strong:#475569;
+  --text:         #f1f5f9;
+  --text-2:       #94a3b8;
+  --text-3:       #475569;
+  --shadow:       0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md:    0 4px 16px rgba(0,0,0,0.4);
+  --accent-light: #1e3a5f;
+  --danger-light: #3b0f0f;
+  --success-light:#0f2d1a;
+  --warn-light:   #2d1f06;
+  --shift-i-light: #271200;
+  --shift-ii-light:#001829;
+  --shift-iii-light:#160b2e;
+}
+
+/* ── RESET ────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-size:15px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  transition:background 0.2s,color 0.2s;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+input,textarea{font-family:inherit;}
+
+/* ── LAYOUT SHELL ─────────────────────────────────────── */
+#app{
+  display:flex;
+  flex-direction:column;
+  height:100dvh;
+  max-width:430px;
+  margin:0 auto;
+  position:relative;
+  overflow:hidden;
+}
+
+/* ── SCREENS ──────────────────────────────────────────── */
+.screen{
+  display:none;
+  flex-direction:column;
+  flex:1;
+  overflow:hidden;
+}
+.screen.active{display:flex;}
+.tab-content{
+  display:none;
+  flex-direction:column;
+  flex:1;
+  min-height:0;
+  overflow:hidden;
+}
+
+/* ── HEADER ───────────────────────────────────────────── */
+.header{
+  height:var(--header-h);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 20px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  position:relative;
+  z-index:10;
+}
+.header-title{font-size:17px;font-weight:600;color:var(--text);}
+.header-logo{font-size:18px;font-weight:700;color:var(--accent);letter-spacing:-0.03em;}
+.header-logo span{color:var(--text);}
+.header-btn{
+  width:38px;height:38px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:var(--radius-sm);color:var(--text-2);font-size:18px;
+  background:var(--surface2);transition:background 0.15s;
+}
+.header-btn:active{background:var(--border);}
+.btn-logout{
+  font-size:12px;font-weight:600;color:var(--text-2);
+  padding:5px 12px;border-radius:var(--radius-sm);
+  border:1px solid var(--border);background:var(--surface2);transition:background 0.15s;
+}
+.btn-logout:active{background:var(--border);}
+#home-body{overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;padding-bottom:calc(var(--tab-h) + 12px);}
+#owner-home{display:none;flex-direction:column;}
+#waiter-home{display:none;flex-direction:column;}
+
+/* ── OWNER HOME ───────────────────────────────────────── */
+.owner-today-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-bottom:10px;}
+.owner-shift-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);}
+.owner-shift-row:last-child{border-bottom:none;}
+.owner-shift-badge{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
+.owner-shift-info{flex:1;min-width:0;}
+.owner-shift-time{font-size:11px;color:var(--text-3);font-variant-numeric:tabular-nums;}
+.owner-shift-names{font-size:13px;color:var(--text);font-weight:500;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.owner-coverage-pill{height:22px;padding:0 8px;border-radius:99px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;}
+.owner-pending-card{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:11px 14px;margin-bottom:10px;font-size:13px;color:var(--text-2);cursor:default;}
+.owner-pending-card.has-pending{border-color:var(--warn);background:var(--warn-light);color:var(--text);cursor:pointer;}
+.owner-pending-icon{font-size:16px;flex-shrink:0;}
+.owner-pending-text{flex:1;font-weight:500;}
+.owner-week-strip{display:flex;gap:4px;margin-bottom:10px;}
+.owner-hours-details{margin-bottom:0;}
+.owner-hours-summary{display:flex;align-items:center;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text-3);padding:10px 0 8px;cursor:pointer;list-style:none;user-select:none;}
+.owner-hours-summary::-webkit-details-marker{display:none;}
+.hours-chevron{font-size:11px;margin-left:3px;}
+.hours-chevron::before{content:'▾';}
+details[open] .hours-chevron::before{content:'▴';}
+.owner-hours-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;}
+.owner-hours-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);}
+.owner-hours-row:last-child{border-bottom:none;}
+.hours-expand-row{padding:8px 14px;font-size:12px;color:var(--text-3);text-align:center;cursor:pointer;}
+.owner-hours-name{font-size:13px;font-weight:500;color:var(--text);width:54px;flex-shrink:0;}
+.owner-hours-bar-bg{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.owner-hours-bar-fill{height:100%;border-radius:2px;}
+.owner-hours-nums{font-size:11px;color:var(--text-2);width:68px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.owner-hours-proj{color:var(--text-3);}
+.btn-whatsapp{background:#25D366;color:#fff;border:none;border-radius:var(--radius-sm);padding:9px 14px;font-size:13px;font-weight:600;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;touch-action:manipulation;cursor:pointer;}
+.sm-sunday-selector{display:flex;gap:3px;flex:1;}
+.sm-sunday-btn{flex:1;padding:5px 4px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);font-size:10px;font-weight:600;color:var(--text-2);touch-action:manipulation;text-align:center;line-height:1.3;}
+.sm-sunday-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.sm-mode-selector{display:flex;gap:3px;margin-bottom:6px;}
+.sm-mode-btn{flex:1;padding:5px 4px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);font-size:11px;font-weight:600;color:var(--text-2);touch-action:manipulation;text-align:center;}
+.sm-mode-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.sm-stepper-val-wide{font-size:12px;font-weight:700;color:var(--text);min-width:90px;text-align:center;}
+.btn-sunday-open{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 10px;font-size:12px;font-weight:600;color:var(--text-2);touch-action:manipulation;cursor:pointer;flex-shrink:0;}
+.sm-sunday-default-wrap{margin-bottom:14px;}
+.sm-sunday-default-label{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;}
+.sm-sunday-default-sel{display:flex;gap:4px;}
+.sm-sunday-default-sel .sm-sunday-btn{flex:1;padding:8px 4px;font-size:11px;}
+.sm-generiraj-block{margin-bottom:14px;}
+.sm-generiraj-label{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px;}
+.sm-generiraj-stepper{display:flex;align-items:center;justify-content:center;gap:10px;padding:8px 0;}
+.sm-generiraj-stepper .sm-stepper-btn{width:30px;height:30px;}
+.sm-generiraj-val{font-size:14px;font-weight:700;color:var(--text);min-width:90px;text-align:center;}
+.sunday-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);}
+.sunday-item:last-child{border-bottom:none;}
+.sunday-item-date{font-size:13px;color:var(--text);font-weight:500;}
+.sunday-item-sel{display:flex;gap:3px;}
+.sunday-item-btn{padding:4px 7px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);font-size:10px;font-weight:600;color:var(--text-2);touch-action:manipulation;}
+.sunday-item-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.vacation-list-wrap{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:0 12px;margin-bottom:8px;min-height:20px;}
+.vacation-item{display:flex;align-items:center;gap:6px;padding:7px 0;border-bottom:1px solid var(--border);}
+.vacation-item:last-child{border-bottom:none;}
+.vac-date-input{flex:1;font-size:12px;padding:5px 8px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text);min-width:0;}
+.vac-sep{font-size:12px;color:var(--text-3);flex-shrink:0;}
+.vac-remove{background:none;border:none;color:var(--danger);font-size:15px;cursor:pointer;padding:0 2px;flex-shrink:0;}
+.hours-nav-btn{background:var(--surface2);border:1px solid var(--border);border-radius:6px;width:26px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-2);cursor:pointer;touch-action:manipulation;flex-shrink:0;}
+.hours-nav-group{display:flex;gap:4px;margin-left:auto;flex-shrink:0;}
+.sm-notify-section{margin-top:14px;}
+.approval-card-inline{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:12px 14px;margin-bottom:8px;}
+.btn-logout-sm{background:none;border:none;font-size:12px;font-weight:600;color:var(--text-3);padding:4px 8px;cursor:pointer;touch-action:manipulation;}
+
+/* ── GAP DAYS ─────────────────────────────────────────── */
+.owner-gap-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-bottom:10px;}
+.owner-gap-empty{padding:10px 14px;font-size:13px;color:var(--success);font-weight:500;}
+.owner-gap-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;}
+.owner-gap-row:last-child{border-bottom:none;}
+.owner-gap-date{font-size:13px;font-weight:500;color:var(--text);flex:1;}
+.owner-gap-shifts{display:flex;gap:4px;}
+.owner-gap-badge{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;color:#fff;background:var(--danger);}
+
+/* ── SHIFTMAKER ───────────────────────────────────────── */
+.sm-row{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);}
+.sm-row:last-child{border-bottom:none;}
+.sm-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+.sm-name{font-size:13px;font-weight:500;color:var(--text);width:52px;flex-shrink:0;}
+.sm-stepper{display:flex;align-items:center;gap:4px;}
+.sm-stepper-btn{width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);font-size:15px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--text);touch-action:manipulation;flex-shrink:0;}
+.sm-stepper-val{font-size:13px;font-weight:700;color:var(--text);width:16px;text-align:center;}
+.sm-label{font-size:10px;color:var(--text-3);}
+.sm-pref{display:flex;gap:3px;flex-shrink:0;}
+.sm-pref-btn{padding:3px 7px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);font-size:11px;font-weight:700;color:var(--text-2);touch-action:manipulation;line-height:1.4;}
+.sm-pref-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.sm-shifts-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;margin-bottom:10px;}
+.sm-shift-row{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--border);}
+.sm-shift-row:last-child{border-bottom:none;}
+.sm-shift-row.sm-disabled{opacity:0.38;}
+.sm-shift-toggle-wrap{display:flex;align-items:center;gap:8px;cursor:pointer;}
+.sm-shift-check{width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer;}
+.sm-shift-name{font-size:13px;font-weight:500;color:var(--text);}
+.sm-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:14px;}
+.sm-toggle-label{font-size:13px;color:var(--text);}
+
+/* ── DAY DETAIL SHEET ─────────────────────────────────── */
+.day-detail-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.day-detail-row:last-child{border-bottom:none;}
+.day-detail-badge{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
+.day-detail-names{font-size:13px;color:var(--text);flex:1;padding-top:5px;}
+.day-detail-time{font-size:11px;color:var(--text-3);margin-top:2px;font-variant-numeric:tabular-nums;}
+
+/* ── SCROLLABLE BODY ──────────────────────────────────── */
+.screen-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 14px;}
+.screen-body.pad-bottom{padding-bottom:calc(var(--tab-h) + 12px);}
+
+/* ── ONBOARDING ──────────────────────────────────────── */
+.ob-overlay{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.72);display:none;flex-direction:column;justify-content:flex-end;}
+.ob-overlay.open{display:flex;}
+.ob-skip{position:absolute;top:18px;right:20px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.65);padding:6px 10px;}
+.ob-card{background:var(--surface);border-radius:24px 24px 0 0;padding:28px 24px 44px;}
+.ob-dots{display:flex;gap:6px;justify-content:center;margin-bottom:22px;}
+.ob-dot{width:6px;height:6px;border-radius:50%;background:var(--border);transition:background 0.2s,width 0.2s;}
+.ob-dot.active{background:var(--accent);width:18px;}
+.ob-icon{font-size:40px;margin-bottom:14px;text-align:center;}
+.ob-title{font-size:20px;font-weight:700;margin-bottom:8px;text-align:center;}
+.ob-body{font-size:14px;color:var(--text-2);line-height:1.6;text-align:center;margin-bottom:26px;}
+.ob-next{width:100%;padding:14px;border-radius:var(--radius);background:var(--accent);color:#fff;font-size:15px;font-weight:700;}
+
+/* ── TAB SLIDER ───────────────────────────────────────── */
+.tab-slider{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;position:relative;}
+@keyframes slideInRight{from{transform:translateX(22%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+@keyframes slideInLeft{from{transform:translateX(-22%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.slide-in-right{animation:slideInRight 0.2s ease;}
+.slide-in-left{animation:slideInLeft 0.2s ease;}
+
+/* ── TAB BAR ──────────────────────────────────────────── */
+.tabbar{height:var(--tab-h);display:flex;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.tabbar::-webkit-scrollbar{display:none;}
+.tab-btn{flex:1;min-width:0;padding:0 6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--text-3);font-size:9px;font-weight:500;transition:color 0.15s;position:relative;}
+.tab-btn.active{color:var(--accent);}
+.tab-btn .tab-icon{font-size:16px;line-height:1;}
+.tab-badge{position:absolute;top:6px;right:calc(50% - 18px);min-width:16px;height:16px;background:var(--danger);color:#fff;font-size:9px;font-weight:700;border-radius:99px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+
+/* ══ LOADING SCREEN ═══════════════════════════════════════ */
+#screen-loading{background:var(--bg);justify-content:center;align-items:center;gap:20px;}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ══ LOGIN SCREEN ═════════════════════════════════════════ */
+#screen-login{background:var(--bg);justify-content:center;align-items:center;padding:32px 24px;}
+.login-logo{font-size:32px;font-weight:700;color:var(--accent);letter-spacing:-0.04em;margin-bottom:4px;text-align:center;}
+.login-logo span{color:var(--text);}
+.login-tagline{font-size:13px;color:var(--text-3);text-align:center;margin-bottom:40px;}
+.login-name-display{height:52px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;}
+.login-name{font-size:22px;font-weight:600;color:var(--accent);opacity:0;transition:opacity 0.2s;}
+.login-name.visible{opacity:1;}
+.pin-dots{display:flex;gap:14px;justify-content:center;margin-bottom:32px;}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border-strong);background:transparent;transition:all 0.15s;}
+.pin-dot.filled{background:var(--accent);border-color:var(--accent);transform:scale(1.1);}
+.pin-dot.error{background:var(--danger);border-color:var(--danger);}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:280px;}
+.key{aspect-ratio:1;border-radius:50%;background:var(--surface);border:1px solid var(--border);font-size:22px;font-weight:500;color:var(--text);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transition:background 0.1s,transform 0.1s;user-select:none;touch-action:manipulation;}
+.key:active{background:var(--surface2);transform:scale(0.93);}
+.key.key-del{font-size:18px;color:var(--text-2);}
+.key.key-empty{background:transparent;border:none;box-shadow:none;pointer-events:none;}
+.login-error{margin-top:16px;font-size:13px;color:var(--danger);text-align:center;min-height:20px;}
+.login-owner-link{margin-top:28px;font-size:13px;color:var(--text-3);text-align:center;}
+.login-owner-link button{color:var(--accent);font-size:13px;font-weight:600;text-decoration:underline;}
+.login-no-session{text-align:center;max-width:240px;}
+.login-no-session p{font-size:14px;color:var(--text-2);line-height:1.6;margin-bottom:20px;}
+
+/* ── SHAKE ──────────────────────────────────────────────── */
+@keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}}
+.shake{animation:shake 0.35s ease;}
+@keyframes slideDown{from{transform:translateY(0);}to{transform:translateY(110%);}}
+.modal.closing{animation:slideDown 0.25s ease forwards;}
+
+/* ══ OWNER AUTH SCREEN ════════════════════════════════════ */
+#screen-owner-auth{background:var(--bg);justify-content:center;align-items:center;padding:32px 24px;}
+.auth-card{width:100%;max-width:340px;}
+.auth-logo{font-size:28px;font-weight:700;color:var(--accent);letter-spacing:-0.04em;text-align:center;margin-bottom:4px;}
+.auth-logo span{color:var(--text);}
+.auth-tagline{font-size:13px;color:var(--text-3);text-align:center;margin-bottom:32px;}
+.auth-title{font-size:20px;font-weight:700;color:var(--text);margin-bottom:20px;text-align:center;}
+.auth-error{font-size:13px;color:var(--danger);text-align:center;min-height:18px;margin-bottom:10px;}
+.auth-link{font-size:13px;color:var(--text-3);text-align:center;margin-top:16px;}
+.auth-link button{color:var(--accent);font-weight:600;}
+.auth-back{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-3);margin-bottom:24px;}
+.auth-back button{color:var(--accent);font-weight:600;font-size:13px;}
+
+/* ══ INVITE SCREEN ════════════════════════════════════════ */
+#screen-invite{background:var(--bg);justify-content:center;align-items:center;padding:32px 24px;}
+.invite-card{width:100%;max-width:340px;text-align:center;}
+.invite-logo{font-size:24px;font-weight:700;color:var(--accent);letter-spacing:-0.04em;margin-bottom:24px;}
+.invite-logo span{color:var(--text);}
+.invite-avatar{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;margin:0 auto 12px;}
+.invite-name{font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.invite-cafe{font-size:14px;color:var(--text-3);margin-bottom:28px;}
+.invite-instruction{font-size:15px;color:var(--text-2);margin-bottom:24px;line-height:1.5;}
+.invite-pin-dots{display:flex;gap:14px;justify-content:center;margin-bottom:24px;}
+.invite-error{font-size:13px;color:var(--danger);min-height:18px;margin-bottom:8px;}
+.invite-confirm-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:12px;}
+
+/* ══ CAFE SETUP SCREEN ════════════════════════════════════ */
+#screen-cafe-setup{background:var(--bg);justify-content:center;align-items:center;padding:32px 24px;}
+.setup-card{width:100%;max-width:340px;}
+.setup-icon{font-size:48px;text-align:center;margin-bottom:16px;}
+.setup-title{font-size:22px;font-weight:700;color:var(--text);text-align:center;margin-bottom:8px;}
+.setup-sub{font-size:14px;color:var(--text-2);text-align:center;margin-bottom:28px;line-height:1.5;}
+
+/* ══ HOME / MY SHIFTS ═════════════════════════════════════ */
+.greeting{margin-bottom:20px;}
+.greeting-name{font-size:22px;font-weight:700;color:var(--text);}
+.greeting-sub{font-size:13px;color:var(--text-2);margin-top:2px;}
+
+.week-strip{display:flex;gap:4px;margin-bottom:10px;}
+.day-chip{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:var(--radius);background:var(--surface);border:1px solid var(--border);}
+.day-chip.today{background:var(--accent);border-color:var(--accent);}
+.day-chip.has-request{border-color:var(--warn);}
+.day-chip-label{font-size:10px;font-weight:500;color:var(--text-3);}
+.day-chip.today .day-chip-label{color:rgba(255,255,255,0.75);}
+.day-chip-num{font-size:15px;font-weight:700;color:var(--text);}
+.day-chip.today .day-chip-num{color:#fff;}
+.day-chip-shift{font-size:8px;color:var(--text-3);font-weight:600;letter-spacing:-0.01em;}
+.day-chip.today .day-chip-shift{color:rgba(255,255,255,0.65);}
+
+.section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-3);margin-bottom:6px;margin-top:10px;}
+.shift-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:9px 12px;margin-bottom:6px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);}
+.shift-card-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;}
+.shift-card-icon.jutro{background:var(--shift-i-light);color:var(--shift-i);}
+.shift-card-icon.međusmjena{background:var(--shift-ii-light);color:var(--shift-ii);}
+.shift-card-icon.popodne{background:var(--shift-iii-light);color:var(--shift-iii);}
+.shift-card-info{flex:1;}
+.shift-card-date{font-size:13px;font-weight:600;color:var(--text);}
+.shift-card-time{font-size:12px;color:var(--text-2);}
+.shift-card-status{font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px;}
+.status-ok{background:var(--success-light);color:var(--success);}
+.status-pending{background:var(--warn-light);color:var(--warn);}
+.status-off{background:var(--danger-light);color:var(--danger);}
+
+.btn-primary{width:100%;padding:12px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 2px 8px rgba(37,99,235,0.3);transition:background 0.15s,transform 0.1s;margin-top:8px;}
+.btn-primary:active{background:var(--accent-dark);transform:scale(0.98);}
+.btn-primary:disabled{opacity:0.6;pointer-events:none;}
+.btn-secondary{width:100%;padding:14px;background:var(--surface2);color:var(--text);font-size:14px;font-weight:500;border-radius:var(--radius);border:1px solid var(--border);transition:background 0.15s;margin-top:8px;}
+.btn-secondary:active{background:var(--border);}
+.btn-danger{width:100%;padding:14px;background:var(--danger-light);color:var(--danger);font-size:14px;font-weight:600;border-radius:var(--radius);transition:background 0.15s;margin-top:8px;}
+.btn-success{width:100%;padding:14px;background:var(--success-light);color:var(--success);font-size:14px;font-weight:600;border-radius:var(--radius);transition:background 0.15s;margin-top:8px;}
+
+/* ══ REQUEST SCREEN ══════════════════════════════════════ */
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:20px;}
+.cal-header{text-align:center;font-size:11px;font-weight:600;color:var(--text-3);padding:6px 0;}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);font-size:14px;font-weight:500;color:var(--text);background:var(--surface);border:1px solid transparent;transition:all 0.1s;cursor:pointer;position:relative;}
+.cal-day:active{transform:scale(0.92);}
+.cal-day.empty{background:transparent;pointer-events:none;border:none;}
+.cal-day.today{border-color:var(--accent);color:var(--accent);font-weight:700;}
+.cal-day.selected{background:var(--accent);color:#fff;border-color:var(--accent);}
+.cal-day.past{color:var(--text-3);pointer-events:none;}
+.cal-day.has-request{background:var(--warn-light);}
+.cal-day.off-day{color:var(--text-3);pointer-events:none;opacity:0.4;}
+.cal-dot{position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--warn);}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.cal-nav-title{font-size:16px;font-weight:600;color:var(--text);}
+.cal-nav-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);background:var(--surface2);color:var(--text-2);font-size:16px;}
+.cal-nav-btn:active{background:var(--border);}
+.shift-picker{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.shift-picker-row{display:flex;gap:8px;}
+.shift-option{flex:1;padding:10px 6px;border-radius:var(--radius);border:2px solid var(--border);background:var(--surface);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;font-weight:500;color:var(--text-2);transition:all 0.15s;cursor:pointer;}
+.shift-option .shift-icon{font-size:15px;font-weight:800;letter-spacing:0.01em;}
+.shift-option.selected{border-color:var(--accent);background:var(--accent-light);color:var(--accent);}
+.shift-option:active{transform:scale(0.97);}
+.shift-option.disabled{opacity:0.3;pointer-events:none;}
+.note-input{width:100%;padding:12px 14px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;font-family:inherit;resize:none;outline:none;margin-bottom:16px;transition:border-color 0.15s;}
+.note-input:focus{border-color:var(--accent);}
+.note-input::placeholder{color:var(--text-3);}
+
+/* ══ SWAPS SCREEN ════════════════════════════════════════ */
+.swap-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow);}
+.swap-card-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;}
+.swap-person{font-size:15px;font-weight:600;color:var(--text);}
+.swap-date{font-size:12px;color:var(--text-2);}
+.swap-details{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.detail-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:500;}
+.chip-morning{background:var(--warn-light);color:var(--warn);}
+.chip-afternoon{background:var(--accent-light);color:var(--accent);}
+.chip-both{background:var(--danger-light);color:var(--danger);}
+.chip-covered{background:var(--success-light);color:var(--success);}
+.swap-note{font-size:13px;color:var(--text-2);font-style:italic;margin-bottom:12px;padding:8px 12px;background:var(--surface2);border-radius:var(--radius-sm);}
+.swap-actions{display:flex;gap:8px;}
+.btn-cover{flex:1;padding:11px;background:var(--accent);color:#fff;font-size:13px;font-weight:600;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;gap:6px;transition:background 0.15s;}
+.btn-cover:active{background:var(--accent-dark);}
+.btn-cover.covered{background:var(--success-light);color:var(--success);pointer-events:none;}
+.empty-state{text-align:center;padding:48px 24px;color:var(--text-3);}
+.empty-icon{font-size:48px;margin-bottom:12px;}
+.empty-title{font-size:16px;font-weight:600;color:var(--text-2);margin-bottom:6px;}
+.empty-sub{font-size:13px;}
+.filter-tabs{display:flex;gap:6px;margin-bottom:16px;background:var(--surface2);padding:4px;border-radius:var(--radius-sm);}
+.filter-tab{flex:1;padding:8px;border-radius:6px;font-size:13px;font-weight:500;color:var(--text-2);text-align:center;transition:all 0.15s;}
+.filter-tab.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow);}
+
+/* ══ WEEK VIEW ═══════════════════════════════════════════ */
+.week-table{border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);background:var(--surface);margin-bottom:16px;}
+.week-table-header{display:grid;grid-template-columns:52px repeat(7,1fr);background:var(--surface2);border-bottom:1px solid var(--border);}
+.week-col-head{padding:8px 4px;text-align:center;font-size:10px;font-weight:600;color:var(--text-3);border-right:1px solid var(--border);}
+.week-col-head:last-child{border-right:none;}
+.week-col-head.today-col{color:var(--accent);}
+.week-row{display:grid;grid-template-columns:52px repeat(7,1fr);border-bottom:1px solid var(--border);}
+.week-row:last-child{border-bottom:none;}
+.week-row-label{display:flex;align-items:center;justify-content:center;padding:10px 4px;font-size:15px;font-weight:800;color:var(--text-3);background:var(--surface2);border-right:1px solid var(--border);text-align:center;line-height:1.2;}
+.week-cell{padding:5px 3px;border-right:1px solid var(--border);min-height:78px;display:flex;flex-direction:column;gap:2px;align-items:stretch;}
+.week-cell:last-child{border-right:none;}
+.week-cell.today-col{background:rgba(37,99,235,0.04);}
+.week-cell.gap{background:var(--danger-light);}
+.person-chip{font-size:9px;font-weight:600;padding:2px 4px;border-radius:4px;color:#fff;text-align:center;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.gap-chip{font-size:9px;font-weight:600;padding:2px 4px;border-radius:4px;background:var(--danger-light);color:var(--danger);text-align:center;}
+
+/* ══ ADMIN SCREEN ════════════════════════════════════════ */
+.admin-section{margin-bottom:24px;}
+.admin-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+.admin-row{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border);gap:12px;}
+.admin-row:last-child{border-bottom:none;}
+.admin-row-info{flex:1;}
+.admin-row-name{font-size:14px;font-weight:600;color:var(--text);}
+.admin-row-sub{font-size:12px;color:var(--text-2);}
+.admin-row-actions{display:flex;gap:6px;}
+.btn-icon{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);font-size:16px;background:var(--surface2);color:var(--text-2);transition:background 0.15s;}
+.btn-icon:active{background:var(--border);}
+.btn-icon.danger{background:var(--danger-light);color:var(--danger);}
+.approval-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow);}
+.approval-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.approval-title{font-size:14px;font-weight:600;color:var(--text);}
+.approval-sub{font-size:12px;color:var(--text-2);margin-top:2px;}
+.approval-actions{display:flex;gap:8px;margin-top:12px;}
+.btn-approve{flex:1;padding:10px;background:var(--success-light);color:var(--success);font-size:13px;font-weight:600;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;gap:5px;}
+.btn-reject{flex:1;padding:10px;background:var(--danger-light);color:var(--danger);font-size:13px;font-weight:600;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;gap:5px;}
+
+/* ── MODAL ──────────────────────────────────────────────── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:flex-end;justify-content:center;backdrop-filter:blur(2px);}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-width:430px;max-height:85dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;animation:slideUp 0.25s ease;}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.modal-handle{width:36px;height:4px;background:var(--border-strong);border-radius:99px;margin:0 auto 20px;}
+.modal-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.modal-sub{font-size:13px;color:var(--text-2);margin-bottom:20px;}
+
+.form-label{font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;display:block;}
+.form-input{width:100%;padding:12px 14px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:15px;font-family:inherit;outline:none;margin-bottom:14px;transition:border-color 0.15s;}
+.form-input:focus{border-color:var(--accent);}
+.form-input::placeholder{color:var(--text-3);}
+
+.shift-pattern-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:14px;}
+.pattern-day{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.pattern-day-label{font-size:9px;font-weight:600;color:var(--text-3);text-align:center;}
+.pattern-btn{width:32px;height:26px;border-radius:5px;font-size:9px;font-weight:600;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--surface2);color:var(--text-3);transition:all 0.1s;cursor:pointer;}
+.pattern-btn.active-m{background:var(--shift-i-light);border-color:var(--shift-i);color:var(--shift-i);}
+.pattern-btn.active-s{background:var(--shift-ii-light);border-color:var(--shift-ii);color:var(--shift-ii);}
+.pattern-btn.active-a{background:var(--shift-iii-light);border-color:var(--shift-iii);color:var(--shift-iii);}
+
+/* ── TOAST ──────────────────────────────────────────────── */
+.toast{position:fixed;bottom:calc(var(--tab-h) + 12px);left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:99px;font-size:13px;font-weight:500;white-space:nowrap;z-index:200;opacity:0;transition:opacity 0.2s;pointer-events:none;max-width:90vw;}
+.toast.show{opacity:1;}
+
+/* ── WHATSAPP NOTIFY ────────────────────────────────────── */
+.notify-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-top:12px;}
+.notify-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px;}
+.notify-btns{display:flex;gap:8px;}
+.btn-wa{flex:1;padding:10px;background:#25D366;color:#fff;font-size:13px;font-weight:600;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;gap:5px;text-decoration:none;}
+.btn-email{flex:1;padding:10px;background:var(--surface2);color:var(--text-2);font-size:13px;font-weight:600;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;gap:5px;text-decoration:none;border:1px solid var(--border);}
+
+/* ── THEME TOGGLE ───────────────────────────────────────── */
+.theme-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;}
+.theme-label{font-size:14px;font-weight:500;color:var(--text);}
+.toggle{width:44px;height:26px;background:var(--border-strong);border-radius:99px;position:relative;cursor:pointer;transition:background 0.2s;}
+.toggle.on{background:var(--accent);}
+.toggle-knob{position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+.toggle.on .toggle-knob{transform:translateX(18px);}
+
+/* ── LOGOUT ─────────────────────────────────────────────── */
+.logout-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;cursor:pointer;}
+.logout-label{font-size:14px;font-weight:500;color:var(--text);}
+.logout-label-danger{color:var(--danger);}
+
+/* ── INVITE LINK COPY ───────────────────────────────────── */
+.invite-link-row{display:flex;gap:8px;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;margin-bottom:8px;}
+.invite-link-text{flex:1;font-size:11px;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btn-copy{flex-shrink:0;padding:5px 10px;border-radius:6px;background:var(--accent);color:#fff;font-size:12px;font-weight:600;}
+.join-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:600;}
+.join-badge.active{background:var(--success-light);color:var(--success);}
+.join-badge.pending{background:var(--warn-light);color:var(--warn);}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══════════════ LOADING ══════════════ -->
+<div id="screen-loading" class="screen active">
+  <div class="login-logo" style="margin-top:auto;margin-bottom:12px;">Zamijeni<span>Me</span></div>
+  <div class="spinner" style="margin:0 auto;"></div>
+  <div style="font-size:13px;color:var(--text-3);margin-top:12px;margin-bottom:auto;">Učitavanje...</div>
+</div>
+
+<!-- ══════════════ LOGIN (waiter PIN) ══════════════ -->
+<div id="screen-login" class="screen">
+  <div class="login-logo">Zamijeni<span>Me</span></div>
+  <p class="login-tagline">Tvoje smjene, tvoja pravila.</p>
+  <!-- waiter session: show name + PIN keypad -->
+  <div id="login-waiter-section" style="display:none;width:100%;flex-direction:column;align-items:center;">
+    <div class="login-name-display">
+      <div class="login-name" id="login-name-display">&#8203;</div>
+    </div>
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot" id="dot-0"></div>
+      <div class="pin-dot" id="dot-1"></div>
+      <div class="pin-dot" id="dot-2"></div>
+      <div class="pin-dot" id="dot-3"></div>
+    </div>
+    <div class="keypad" id="keypad">
+      <button class="key" data-key="1">1</button>
+      <button class="key" data-key="2">2</button>
+      <button class="key" data-key="3">3</button>
+      <button class="key" data-key="4">4</button>
+      <button class="key" data-key="5">5</button>
+      <button class="key" data-key="6">6</button>
+      <button class="key" data-key="7">7</button>
+      <button class="key" data-key="8">8</button>
+      <button class="key" data-key="9">9</button>
+      <button class="key key-empty" data-key=""></button>
+      <button class="key" data-key="0">0</button>
+      <button class="key key-del" data-key="del">⌫</button>
+    </div>
+    <div class="login-error" id="login-error"></div>
+  </div>
+  <!-- no session: welcome for new waiter -->
+  <div id="login-no-session-section" style="display:none;flex-direction:column;align-items:center;">
+    <div class="login-no-session">
+      <p>Nisi još aktiviran/a.<br>Zatraži pozivnicu od vlasnika kafića.</p>
+    </div>
+  </div>
+  <!-- owner link always shown at bottom -->
+  <div class="login-owner-link">
+    <button id="btn-go-owner-auth">Vlasnik? Prijavi se →</button>
+  </div>
+</div>
+
+<!-- ══════════════ OWNER AUTH ══════════════ -->
+<div id="screen-owner-auth" class="screen">
+  <div class="auth-card">
+    <div class="auth-logo">Zamijeni<span>Me</span></div>
+    <p class="auth-tagline">Upravljaj timom i rasporedom.</p>
+    <div class="auth-title" id="auth-title">Prijava vlasnika</div>
+    <div class="auth-error" id="auth-error"></div>
+    <label class="form-label">Email</label>
+    <input class="form-input" id="auth-email" type="email" placeholder="tvoj@email.com" autocomplete="email"/>
+    <label class="form-label">Lozinka</label>
+    <input class="form-input" id="auth-password" type="password" placeholder="Minimalno 6 znakova" autocomplete="current-password"/>
+    <button class="btn-primary" id="btn-auth-submit" style="margin-top:4px;">Prijavi se</button>
+    <div class="auth-link">
+      <span id="auth-toggle-text">Nemaš račun?</span>
+      <button id="btn-auth-toggle">Registriraj se</button>
+    </div>
+    <div class="auth-back" style="justify-content:center;margin-top:16px;margin-bottom:0;">
+      <button id="btn-back-to-login">← Nazad na prijavu radnika</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ CAFE SETUP ══════════════ -->
+<div id="screen-cafe-setup" class="screen">
+  <div class="setup-card">
+    <div class="setup-icon">☕</div>
+    <div class="setup-title">Dobrodošli!</div>
+    <p class="setup-sub">Kako se zove tvoj kafić?<br>Ovo je ime koje će tim vidjeti.</p>
+    <label class="form-label">Naziv kafića</label>
+    <input class="form-input" id="setup-cafe-name" type="text" placeholder="npr. Caffe Bar Lipa"/>
+    <label class="form-label">Tvoje ime</label>
+    <input class="form-input" id="setup-owner-name" type="text" placeholder="npr. Ivan Horvat"/>
+    <label class="form-label">Telefon (WhatsApp, bez + ili 00)</label>
+    <input class="form-input" id="setup-owner-phone" type="tel" placeholder="385911234567"/>
+    <button class="btn-primary" id="btn-setup-save">Kreiraj kafić →</button>
+  </div>
+</div>
+
+<!-- ══════════════ INVITE ══════════════ -->
+<div id="screen-invite" class="screen">
+  <div class="invite-card">
+    <div class="invite-logo">Zamijeni<span>Me</span></div>
+    <div id="invite-loading" style="text-align:center;padding:20px 0;">
+      <div class="spinner" style="margin:0 auto 12px;"></div>
+      <div style="font-size:13px;color:var(--text-3);">Provjeravam pozivnicu...</div>
+    </div>
+    <div id="invite-error" style="display:none;text-align:center;">
+      <div style="font-size:40px;margin-bottom:12px;">❌</div>
+      <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px;">Link nije valjan</div>
+      <div style="font-size:14px;color:var(--text-2);">Zatraži novu pozivnicu od vlasnika.</div>
+    </div>
+    <div id="invite-content" style="display:none;">
+      <div class="invite-avatar" id="invite-avatar"></div>
+      <div class="invite-name" id="invite-waiter-name"></div>
+      <div class="invite-cafe" id="invite-cafe-name"></div>
+      <div class="invite-instruction" id="invite-instruction"></div>
+      <div class="invite-confirm-label" id="invite-confirm-label" style="display:none;">Potvrdi PIN</div>
+      <div class="invite-pin-dots" id="invite-pin-dots">
+        <div class="pin-dot" id="inv-dot-0"></div>
+        <div class="pin-dot" id="inv-dot-1"></div>
+        <div class="pin-dot" id="inv-dot-2"></div>
+        <div class="pin-dot" id="inv-dot-3"></div>
+      </div>
+      <div class="invite-error" id="invite-pin-error"></div>
+      <div class="keypad" id="invite-keypad" style="margin:0 auto;">
+        <button class="key" data-key="1">1</button>
+        <button class="key" data-key="2">2</button>
+        <button class="key" data-key="3">3</button>
+        <button class="key" data-key="4">4</button>
+        <button class="key" data-key="5">5</button>
+        <button class="key" data-key="6">6</button>
+        <button class="key" data-key="7">7</button>
+        <button class="key" data-key="8">8</button>
+        <button class="key" data-key="9">9</button>
+        <button class="key key-empty" data-key=""></button>
+        <button class="key" data-key="0">0</button>
+        <button class="key key-del" data-key="del">⌫</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MAIN (post-login) ══════════════ -->
+<div id="screen-main" class="screen">
+<div id="tab-slider" class="tab-slider">
+
+  <!-- ── HOME TAB ── -->
+  <div id="tab-home" class="tab-content">
+    <div class="header">
+      <div id="home-greeting" class="header-title">Dobro jutro!</div>
+      <div style="display:flex;gap:8px;">
+        <button class="header-btn" id="theme-toggle-btn" title="Promijeni temu">🌙</button>
+        <button class="btn-logout" id="logout-btn">Odjava</button>
+      </div>
+    </div>
+    <div class="screen-body" id="home-body">
+      <div id="owner-home"></div>
+      <div id="waiter-home">
+        <div class="section-label" style="margin-top:0;">Pregled tjedna</div>
+        <div class="week-strip" id="week-strip"></div>
+        <div class="section-label">Sljedećih pet dana</div>
+        <div id="my-shifts-list"></div>
+        <button class="btn-primary" id="btn-request-off">Trebam slobodan dan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SWAPS TAB ── -->
+  <div id="tab-swaps" class="tab-content">
+    <div class="header">
+      <div class="header-title">Zamjene</div>
+      <div style="display:flex;gap:6px;">
+        <button class="header-btn" id="theme-toggle-btn-2">🌙</button>
+        <button class="btn-logout" id="logout-btn-swaps">Odjava</button>
+      </div>
+    </div>
+    <div class="screen-body pad-bottom" id="swaps-body">
+      <div class="filter-tabs" id="swaps-filter-tabs">
+        <button class="filter-tab active" data-filter="open" id="filter-open">Otvorene</button>
+        <button class="filter-tab" data-filter="mine" id="filter-mine">Moje</button>
+        <button class="filter-tab" data-filter="pending" id="filter-pending" style="display:none;">Na čekanju</button>
+        <button class="filter-tab" data-filter="covered" id="filter-covered">Pokrivene</button>
+      </div>
+      <div id="swaps-list"></div>
+    </div>
+  </div>
+
+  <!-- ── WEEK TAB ── -->
+  <div id="tab-week" class="tab-content">
+    <div class="header">
+      <div class="header-title">Tjedni raspored</div>
+      <div style="display:flex;gap:6px;">
+        <button class="header-btn" id="theme-toggle-btn-3">🌙</button>
+        <button class="btn-logout" id="logout-btn-week">Odjava</button>
+      </div>
+    </div>
+    <div class="screen-body pad-bottom">
+      <div class="cal-nav" id="week-nav">
+        <button class="cal-nav-btn" id="week-prev">‹</button>
+        <div class="cal-nav-title" id="week-range-label"></div>
+        <button class="cal-nav-btn" id="week-next">›</button>
+      </div>
+      <div class="week-table" id="week-table"></div>
+      <div id="week-waiter-legend" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
+  <!-- ── MONTH TAB ── -->
+  <div id="tab-month" class="tab-content" style="display:none;">
+    <div class="header">
+      <div class="header-title">Mjesečni raspored</div>
+      <div style="display:flex;gap:6px;">
+        <button class="header-btn" id="theme-toggle-btn-5">🌙</button>
+        <button class="btn-logout" id="logout-btn-month">Odjava</button>
+      </div>
+    </div>
+    <div class="screen-body pad-bottom">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" id="month-prev">‹</button>
+        <div class="cal-nav-title" id="month-cal-title"></div>
+        <button class="cal-nav-btn" id="month-next">›</button>
+      </div>
+      <div id="month-calendar"></div>
+      <div id="month-shift-legend" style="display:grid;grid-template-columns:28px 22px 1fr;gap:6px 6px;align-items:center;margin-top:14px;">
+        <div style="height:3px;border-radius:2px;background:var(--shift-i);"></div>
+        <strong style="font-size:12px;color:var(--text);text-align:center;">I</strong>
+        <span style="font-size:12px;color:var(--text-2);font-variant-numeric:tabular-nums;">· 06:00–14:00</span>
+        <div style="height:3px;border-radius:2px;background:var(--shift-ii);"></div>
+        <strong style="font-size:12px;color:var(--text);text-align:center;">II</strong>
+        <span style="font-size:12px;color:var(--text-2);font-variant-numeric:tabular-nums;">· 10:00–18:00</span>
+        <div style="height:3px;border-radius:2px;background:var(--shift-iii);"></div>
+        <strong style="font-size:12px;color:var(--text);text-align:center;">III</strong>
+        <span style="font-size:12px;color:var(--text-2);font-variant-numeric:tabular-nums;">· 14:00–22:00</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ADMIN TAB ── -->
+  <div id="tab-admin" class="tab-content" style="display:none;">
+    <div class="header">
+      <div class="header-title">Admin</div>
+      <div style="display:flex;gap:6px;">
+        <button class="header-btn" id="theme-toggle-btn-4">🌙</button>
+        <button class="btn-logout" id="logout-btn-admin">Odjava</button>
+      </div>
+    </div>
+    <div class="screen-body pad-bottom">
+      <div class="admin-section">
+        <div class="section-label">Tim</div>
+        <div class="admin-card" id="admin-staff-list"></div>
+        <button class="btn-primary" id="btn-add-waiter" style="margin-top:12px;"><span>+</span> Dodaj člana</button>
+      </div>
+      <div class="admin-section">
+        <div class="section-label">Raspored</div>
+        <div class="logout-row" id="btn-shiftmaker">
+          <span class="logout-label">Generator rasporeda</span>
+          <span>⚡</span>
+        </div>
+      </div>
+      <div class="admin-section">
+        <div class="section-label">Postavke</div>
+        <div class="logout-row" id="btn-owner-profile" style="margin-bottom:8px;">
+          <span class="logout-label">Profil vlasnika</span>
+          <span>👤</span>
+        </div>
+        <div class="logout-row" id="admin-logout">
+          <span class="logout-label logout-label-danger">Odjava</span>
+          <span>→</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /tab-slider -->
+
+<!-- ══ ONBOARDING OVERLAY ══ -->
+<div class="ob-overlay" id="ob-overlay">
+  <button class="ob-skip" id="ob-skip">Preskoči</button>
+  <div class="ob-card">
+    <div class="ob-dots" id="ob-dots"></div>
+    <div class="ob-icon" id="ob-icon"></div>
+    <div class="ob-title" id="ob-title"></div>
+    <div class="ob-body" id="ob-body"></div>
+    <button class="ob-next" id="ob-next"></button>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tabbar" id="tabbar">
+  <button class="tab-btn active" data-tab="home"><span class="tab-icon">🏠</span><span>Početna</span></button>
+  <button class="tab-btn" data-tab="swaps" id="tab-btn-swaps"><span class="tab-icon">🔄</span><span>Zamjene</span><span class="tab-badge" id="swap-badge" style="display:none"></span></button>
+  <button class="tab-btn" data-tab="week"><span class="tab-icon">📆</span><span>Tjedan</span></button>
+  <button class="tab-btn" data-tab="month" id="tab-btn-month"><span class="tab-icon">🗓️</span><span>Mjesec</span></button>
+  <button class="tab-btn" data-tab="admin" id="tab-btn-admin" style="display:none;"><span class="tab-icon">⚙️</span><span>Admin</span><span class="tab-badge" id="admin-badge" style="display:none"></span></button>
+</div>
+</div><!-- /screen-main -->
+
+</div><!-- /app -->
+
+<!-- ══ REQUEST DAY OFF MODAL ══ -->
+<div class="modal-overlay" id="modal-request">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Zatraži slobodan dan</div>
+    <div class="modal-sub">Odaberi datum i smjenu</div>
+    <div class="cal-nav">
+      <button class="cal-nav-btn" id="req-cal-prev">‹</button>
+      <div class="cal-nav-title" id="req-cal-month"></div>
+      <button class="cal-nav-btn" id="req-cal-next">›</button>
+    </div>
+    <div class="calendar-grid" id="req-calendar"></div>
+    <div class="shift-picker" id="req-shift-picker">
+      <div class="shift-picker-row">
+        <div class="shift-option" data-shift="jutro"><span class="shift-icon">I</span>Jutro</div>
+        <div class="shift-option" data-shift="međusmjena"><span class="shift-icon">II</span>Međusmjena</div>
+        <div class="shift-option" data-shift="popodne"><span class="shift-icon">III</span>Popodne</div>
+      </div>
+      <div class="shift-picker-row">
+        <div class="shift-option" data-shift="oboje"><span class="shift-icon">📅</span>Cijeli dan</div>
+      </div>
+    </div>
+    <textarea class="note-input" id="req-note" placeholder="Napomena (neobavezno)..." rows="2"></textarea>
+    <button class="btn-primary" id="btn-submit-request">Pošalji zahtjev</button>
+    <button class="btn-secondary" id="btn-cancel-request">Odustani</button>
+    <div id="req-notify-bar" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- ══ SHIFTMAKER MODAL ══ -->
+<div class="modal-overlay" id="modal-shiftmaker">
+  <div class="modal" style="max-height:82dvh;overflow-y:auto;">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Generator rasporeda</div>
+    <div class="modal-sub">Konfiguriraj smjene i tim</div>
+    <label class="form-label" style="margin-top:12px;">Smjene</label>
+    <div class="sm-shifts-card">
+      <div class="sm-shift-row" id="sm-row-jutro">
+        <label class="sm-shift-toggle-wrap">
+          <input type="checkbox" class="sm-shift-check" data-shift="jutro" checked>
+          <div class="shift-card-icon jutro" style="width:24px;height:24px;font-size:11px;border-radius:6px;">I</div>
+          <span class="sm-shift-name">Jutro</span>
+        </label>
+        <div class="sm-stepper">
+          <button class="sm-stepper-btn sm-shift-dec" data-shift="jutro">−</button>
+          <span class="sm-stepper-val" id="sm-min-jutro">2</span>
+          <button class="sm-stepper-btn sm-shift-inc" data-shift="jutro">+</button>
+          <span class="sm-label">min</span>
+        </div>
+      </div>
+      <div class="sm-shift-row" id="sm-row-međusmjena">
+        <label class="sm-shift-toggle-wrap">
+          <input type="checkbox" class="sm-shift-check" data-shift="međusmjena" checked>
+          <div class="shift-card-icon međusmjena" style="width:24px;height:24px;font-size:11px;border-radius:6px;">II</div>
+          <span class="sm-shift-name">Međusmjena</span>
+        </label>
+        <div class="sm-stepper">
+          <button class="sm-stepper-btn sm-shift-dec" data-shift="međusmjena">−</button>
+          <span class="sm-stepper-val" id="sm-min-međusmjena">2</span>
+          <button class="sm-stepper-btn sm-shift-inc" data-shift="međusmjena">+</button>
+          <span class="sm-label">min</span>
+        </div>
+      </div>
+      <div class="sm-shift-row" id="sm-row-popodne">
+        <label class="sm-shift-toggle-wrap">
+          <input type="checkbox" class="sm-shift-check" data-shift="popodne" checked>
+          <div class="shift-card-icon popodne" style="width:24px;height:24px;font-size:11px;border-radius:6px;">III</div>
+          <span class="sm-shift-name">Popodne</span>
+        </label>
+        <div class="sm-stepper">
+          <button class="sm-stepper-btn sm-shift-dec" data-shift="popodne">−</button>
+          <span class="sm-stepper-val" id="sm-min-popodne">2</span>
+          <button class="sm-stepper-btn sm-shift-inc" data-shift="popodne">+</button>
+          <span class="sm-label">min</span>
+        </div>
+      </div>
+    </div>
+    <div class="sm-toggle-row">
+      <span class="sm-toggle-label">Nedjelja</span>
+      <button class="btn-sunday-open" id="btn-open-sunday-settings">Postavi</button>
+    </div>
+    <div id="sm-sunday-summary" style="font-size:11px;color:var(--text-3);padding:0 4px 10px;margin-top:-10px;"></div>
+    <div class="sm-generiraj-block">
+      <label class="form-label">Generiraj za</label>
+      <div class="sm-mode-selector">
+        <button class="sm-mode-btn active" data-smmode="weeks">Tjedni</button>
+        <button class="sm-mode-btn" data-smmode="month">Cijeli mjesec</button>
+      </div>
+      <div class="sm-generiraj-stepper" id="sm-weeks-row">
+        <button class="sm-stepper-btn" id="sm-weeks-dec">−</button>
+        <span class="sm-generiraj-val"><span id="sm-weeks-val">4</span> tjedna</span>
+        <button class="sm-stepper-btn" id="sm-weeks-inc">+</button>
+      </div>
+      <div class="sm-generiraj-stepper" id="sm-month-row" style="display:none;">
+        <button class="sm-stepper-btn" id="sm-month-dec">−</button>
+        <span class="sm-generiraj-val" id="sm-month-val"></span>
+        <button class="sm-stepper-btn" id="sm-month-inc">+</button>
+      </div>
+    </div>
+    <label class="form-label" style="margin-top:10px;">Tim</label>
+    <div id="sm-waiter-list" style="margin-bottom:16px;"></div>
+    <button class="btn-primary" id="btn-generate-schedule">⚡ Generiraj raspored</button>
+    <div id="sm-notify-section" class="sm-notify-section" style="display:none;">
+      <div class="section-label" style="margin-top:14px;">Obavijesti tim</div>
+      <div id="sm-notify-list"></div>
+    </div>
+    <button class="btn-secondary" id="btn-cancel-shiftmaker" style="margin-top:8px;">Odustani</button>
+  </div>
+</div>
+
+<!-- ══ DAY DETAIL SHEET ══ -->
+<div class="modal-overlay" id="modal-day-detail">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="day-detail-title"></div>
+    <div id="day-detail-body"></div>
+    <button class="btn-secondary" id="btn-close-day-detail" style="margin-top:14px;">Zatvori</button>
+  </div>
+</div>
+
+<!-- ══ ADD/EDIT WAITER MODAL ══ -->
+<div class="modal-overlay" id="modal-waiter">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="waiter-modal-title">Dodaj člana</div>
+    <div class="modal-sub">Postavi ime i obrazac smjena. PIN si postavlja sam/a.</div>
+    <label class="form-label">Ime i prezime</label>
+    <input class="form-input" id="waiter-name" placeholder="npr. Ana Horvat" type="text"/>
+    <label class="form-label">Telefon (WhatsApp, bez + ili 00)</label>
+    <input class="form-input" id="waiter-phone" placeholder="npr. 385911234567" type="tel"/>
+    <label class="form-label">Obrazac smjena (klikni da menjaš)</label>
+    <div class="shift-pattern-grid" id="pattern-grid"></div>
+    <label class="form-label" style="margin-top:12px;">Godišnji odmor</label>
+    <div class="vacation-list-wrap" id="vacation-list"></div>
+    <button class="btn-secondary" id="btn-add-vacation" style="font-size:12px;padding:7px 12px;margin-bottom:10px;">+ Dodaj odmor</button>
+    <!-- invite link shown after save for new waiters -->
+    <div id="waiter-invite-section" style="display:none;">
+      <div class="form-label" style="margin-top:4px;margin-bottom:8px;">Pozivnica</div>
+      <div class="invite-link-row">
+        <span class="invite-link-text" id="waiter-invite-link-text">—</span>
+        <button class="btn-copy" id="btn-copy-invite">Kopiraj</button>
+      </div>
+      <a class="btn-wa" id="btn-wa-invite" href="#" target="_blank" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:var(--radius-sm);margin-bottom:0;">💬 Pošalji WhatsApp</a>
+    </div>
+    <button class="btn-primary" id="btn-save-waiter">Spremi</button>
+    <button class="btn-secondary" id="btn-cancel-waiter">Odustani</button>
+  </div>
+</div>
+
+<!-- ══ SUNDAY SETTINGS MODAL ══ -->
+<div class="modal-overlay" id="modal-sunday-settings">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Nedjelje u periodu</div>
+    <div class="modal-sub">Postavi radno vrijeme za svaku nedjelju</div>
+    <div class="sm-sunday-default-wrap">
+      <div class="sm-sunday-default-label">Zadano za sve</div>
+      <div class="sm-sunday-default-sel" id="sm-sunday-default-sel">
+        <button class="sm-sunday-btn" data-mode="closed">Zatvoreno</button>
+        <button class="sm-sunday-btn active" data-mode="morning">Samo jutro</button>
+        <button class="sm-sunday-btn" data-mode="full">Cijeli dan</button>
+      </div>
+    </div>
+    <div id="sunday-list"></div>
+    <button class="btn-primary" id="btn-sunday-done" style="margin-top:14px;">Potvrdi</button>
+  </div>
+</div>
+
+<!-- ══ OWNER PROFILE MODAL ══ -->
+<div class="modal-overlay" id="modal-owner-profile">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Profil vlasnika</div>
+    <label class="form-label">Ime</label>
+    <input class="form-input" id="owner-name-input" placeholder="npr. Ivan Horvat" type="text"/>
+    <label class="form-label">Telefon (WhatsApp, bez + ili 00)</label>
+    <input class="form-input" id="owner-phone-input" placeholder="385911234567" type="tel"/>
+    <label class="form-label">Naziv kafića</label>
+    <input class="form-input" id="owner-business-input" placeholder="npr. Caffe Bar Lipa" type="text"/>
+    <button class="btn-primary" id="btn-save-owner-profile" style="margin-top:4px;">Spremi</button>
+    <button class="btn-secondary" id="btn-cancel-owner-profile">Odustani</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════
+// SUPABASE INIT
+// ══════════════════════════════════════════════════════════
+const SUPA_URL = 'https://vuvvzzktrxydfxgxugke.supabase.co';
+const SUPA_KEY = 'sb_publishable_vwznlZisrrdcHC4Qhm4BNg_4pchX8-M';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ══════════════════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════════════════
+const DAY_LABELS = ["Pon","Uto","Sri","Čet","Pet","Sub","Ned"];
+const DAY_LABELS_FULL = ["Ponedjeljak","Utorak","Srijeda","Četvrtak","Petak","Subota","Nedjelja"];
+const MONTH_NAMES = ["Siječanj","Veljača","Ožujak","Travanj","Svibanj","Lipanj","Srpanj","Kolovoz","Rujan","Listopad","Studeni","Prosinac"];
+const AVATAR_COLORS = ["#2563eb","#7c3aed","#db2777","#059669","#d97706","#dc2626","#0891b2"];
+const WAITER_SESSION_KEY = 'zm_b_waiter';
+
+const ONBOARDING_STEPS = [
+  {icon:'👋',title:'Dobrodošli u ZamijeniMe',body:'Kratki vodič kroz upravljačke funkcije.'},
+  {icon:'🔄',title:'Kartica Zamjene',body:'Ovdje vidite sve zahtjeve tima za slobodne dane. Odobrite ili odbijte jednim dodirom.'},
+  {icon:'📅',title:'Tjedni raspored',body:'Kartica Tjedan prikazuje tko radi koji dan i u kojoj smjeni.'},
+  {icon:'⚙️',title:'Admin panel',body:'Dodajte članove tima, pošaljite im pozivnice i generirajte rasporede.'},
+  {icon:'✅',title:'Sve je postavljeno!',body:'Dodajte prvog člana tima i pošaljite mu pozivnicu putem WhatsAppa.'},
+];
+
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+let STATE = {
+  cafe: null,         // {id, name}
+  waiters: [],        // mapped from DB
+  requests: [],       // mapped from DB
+  owner: {name:'', phone:'', businessName:''},
+  currentUser: null,  // 'owner' | waiter object
+  theme: 'light',
+  activeTab: 'home',
+  weekOffset: 0,
+  dateSchedule: {},   // {iso: {waiterId: [shift,...]}}
+};
+
+// ══════════════════════════════════════════════════════════
+// SESSION HELPERS
+// ══════════════════════════════════════════════════════════
+function getWaiterSession() {
+  try { return JSON.parse(localStorage.getItem(WAITER_SESSION_KEY)); } catch { return null; }
+}
+function setWaiterSession(data) {
+  localStorage.setItem(WAITER_SESSION_KEY, JSON.stringify(data));
+}
+function clearWaiterSession() {
+  localStorage.removeItem(WAITER_SESSION_KEY);
+}
+
+// ══════════════════════════════════════════════════════════
+// SCREEN NAVIGATION
+// ══════════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+}
+
+// ══════════════════════════════════════════════════════════
+// DB MAPPING
+// ══════════════════════════════════════════════════════════
+function mapWaiter(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    phone: row.phone || '',
+    color: row.color || AVATAR_COLORS[0],
+    pattern: row.pattern || {m:[0,0,0,0,0,0,0],s:[0,0,0,0,0,0,0],a:[0,0,0,0,0,0,0]},
+    vacations: row.vacations || [],
+    invite_token: row.invite_token,
+    joined: !!row.joined_at,
+  };
+}
+
+function mapRequest(row) {
+  return {
+    id: row.id,
+    waiterId: row.waiter_id,
+    date: row.date,
+    shift: row.shift,
+    note: row.note || '',
+    status: row.status,
+    coveredBy: row.covered_by || null,
+    approvedBy: row.approved_by || null,
+    createdAt: row.created_at ? row.created_at.slice(0,10) : '',
+  };
+}
+
+function buildDateSchedule(rows) {
+  const ds = {};
+  (rows||[]).forEach(row => {
+    if (!ds[row.date]) ds[row.date] = {};
+    ds[row.date][row.waiter_id] = row.shifts || [];
+  });
+  return ds;
+}
+
+// ══════════════════════════════════════════════════════════
+// DATA LOADING
+// ══════════════════════════════════════════════════════════
+async function loadAppData(cafe_id) {
+  const [wRes, rRes, sRes] = await Promise.all([
+    sb.from('waiters').select('*').eq('cafe_id', cafe_id).order('created_at'),
+    sb.from('shift_requests').select('*').eq('cafe_id', cafe_id),
+    sb.from('date_schedules').select('*').eq('cafe_id', cafe_id),
+  ]);
+  STATE.waiters = (wRes.data||[]).map(mapWaiter);
+  STATE.requests = (rRes.data||[]).map(mapRequest);
+  STATE.dateSchedule = buildDateSchedule(sRes.data);
+}
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+async function init() {
+  applyTheme(localStorage.getItem('zm_b_theme') || 'light');
+
+  // 1. Invite token in URL
+  const params = new URLSearchParams(location.search);
+  const inviteToken = params.get('invite');
+  if (inviteToken) {
+    showScreen('screen-invite');
+    await handleInviteLoad(inviteToken);
+    return;
+  }
+
+  // 2. Owner session (Supabase Auth)
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    await enterOwnerApp(session.user);
+    return;
+  }
+
+  // 3. Waiter session (localStorage)
+  const ws = getWaiterSession();
+  if (ws) {
+    showScreen('screen-login');
+    setupWaiterLoginScreen(ws);
+    return;
+  }
+
+  // 4. Default: login screen (no-session mode)
+  showScreen('screen-login');
+  setupLoginNoSession();
+}
+
+// ══════════════════════════════════════════════════════════
+// OWNER APP ENTRY
+// ══════════════════════════════════════════════════════════
+async function enterOwnerApp(user) {
+  // Load cafe
+  const { data: cafe } = await sb.from('cafes').select('*').eq('owner_id', user.id).single();
+  if (!cafe) {
+    // First time — needs cafe setup
+    document.getElementById('setup-owner-name').value = user.user_metadata?.display_name || '';
+    showScreen('screen-cafe-setup');
+    return;
+  }
+  STATE.cafe = cafe;
+  STATE.owner = {
+    name: user.user_metadata?.display_name || user.email.split('@')[0],
+    phone: user.user_metadata?.phone || '',
+    businessName: cafe.name,
+  };
+  await loadAppData(cafe.id);
+  STATE.currentUser = 'owner';
+  enterMainApp();
+}
+
+// ══════════════════════════════════════════════════════════
+// WAITER APP ENTRY
+// ══════════════════════════════════════════════════════════
+async function enterWaiterApp(session) {
+  // session = {id, name, cafe_id, color}
+  STATE.cafe = {id: session.cafe_id, name: ''};
+  const { data: cafe } = await sb.from('cafes').select('name').eq('id', session.cafe_id).single();
+  if (cafe) STATE.cafe.name = cafe.name;
+  // Load owner info from cafes.owner_id
+  await loadAppData(session.cafe_id);
+  // Find this waiter in STATE.waiters
+  const w = STATE.waiters.find(x => x.id === session.id);
+  STATE.currentUser = w || {id: session.id, name: session.name, color: session.color, pattern:{m:[0,0,0,0,0,0,0],s:[0,0,0,0,0,0,0],a:[0,0,0,0,0,0,0]}, vacations:[], joined:true};
+  enterMainApp();
+}
+
+// ══════════════════════════════════════════════════════════
+// MAIN APP
+// ══════════════════════════════════════════════════════════
+function enterMainApp() {
+  showScreen('screen-main');
+  const ownerUser = isOwner();
+  document.getElementById('tab-btn-admin').style.display = ownerUser ? 'flex' : 'none';
+  document.getElementById('tab-btn-month').style.display = 'flex';
+  const legendEl = document.getElementById('month-shift-legend');
+  if (legendEl) legendEl.style.display = ownerUser ? 'none' : 'grid';
+  switchTab('home');
+  updateBadges();
+  if (ownerUser) {
+    const obKey = 'zm_b_ob_done';
+    try { if (!localStorage.getItem(obKey)) { startOnboarding(); localStorage.setItem(obKey,'1'); } } catch {}
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// LOGIN SCREEN SETUP
+// ══════════════════════════════════════════════════════════
+let PIN_BUFFER = '';
+let _loginWaiterSession = null;
+let _loginVerifying = false;
+
+function setupWaiterLoginScreen(ws) {
+  _loginWaiterSession = ws;
+  PIN_BUFFER = '';
+  document.getElementById('login-waiter-section').style.display = 'flex';
+  document.getElementById('login-no-session-section').style.display = 'none';
+  const nameEl = document.getElementById('login-name-display');
+  nameEl.textContent = ws.name;
+  nameEl.classList.add('visible');
+  renderPinDots([]);
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('keypad').querySelectorAll('.key[data-key]').forEach(btn => {
+    btn.onclick = () => handleLoginKey(btn.dataset.key);
+  });
+}
+
+function setupLoginNoSession() {
+  document.getElementById('login-waiter-section').style.display = 'none';
+  document.getElementById('login-no-session-section').style.display = 'flex';
+}
+
+function renderPinDots(dots) {
+  const container = document.getElementById('pin-dots');
+  if (!container) return;
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById(`dot-${i}`);
+    if (!d) continue;
+    d.classList.toggle('filled', i < dots.length);
+    d.classList.remove('error');
+  }
+}
+
+async function handleLoginKey(k) {
+  if (_loginVerifying) return;
+  const err = document.getElementById('login-error');
+  err.textContent = '';
+  if (k === 'del') {
+    PIN_BUFFER = PIN_BUFFER.slice(0, -1);
+    renderPinDots(PIN_BUFFER);
+    return;
+  }
+  if (PIN_BUFFER.length >= 4) return;
+  PIN_BUFFER += k;
+  renderPinDots(PIN_BUFFER);
+  if (PIN_BUFFER.length === 4) {
+    _loginVerifying = true;
+    const { data: ok } = await sb.rpc('verify_waiter_pin', {
+      p_waiter_id: _loginWaiterSession.id,
+      p_pin: PIN_BUFFER,
+    });
+    _loginVerifying = false;
+    if (ok) {
+      await enterWaiterApp(_loginWaiterSession);
+    } else {
+      const dotsEl = document.getElementById('pin-dots');
+      for (let i = 0; i < 4; i++) {
+        const d = document.getElementById(`dot-${i}`);
+        if (d) d.classList.add('error');
+      }
+      dotsEl.classList.add('shake');
+      setTimeout(() => { dotsEl.classList.remove('shake'); PIN_BUFFER = ''; renderPinDots([]); }, 400);
+      err.textContent = 'Pogrešan PIN. Pokušaj ponovo.';
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// OWNER AUTH SCREEN
+// ══════════════════════════════════════════════════════════
+let _authMode = 'login'; // 'login' | 'register'
+let _pendingSignupUser = null; // stored when email confirmation is required
+
+function setupOwnerAuthScreen() {
+  _authMode = 'login';
+  document.getElementById('auth-title').textContent = 'Prijava vlasnika';
+  document.getElementById('auth-toggle-text').textContent = 'Nemaš račun?';
+  document.getElementById('btn-auth-toggle').textContent = 'Registriraj se';
+  document.getElementById('btn-auth-submit').textContent = 'Prijavi se';
+  document.getElementById('auth-error').textContent = '';
+  document.getElementById('auth-email').value = '';
+  document.getElementById('auth-password').value = '';
+}
+
+async function handleAuthSubmit() {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const errEl = document.getElementById('auth-error');
+  const btn = document.getElementById('btn-auth-submit');
+  if (!email || !password) { errEl.textContent = 'Upiši email i lozinku.'; return; }
+  btn.disabled = true;
+  btn.textContent = '...';
+  errEl.textContent = '';
+  if (_authMode === 'login') {
+    const { data, error } = await sb.auth.signInWithPassword({email, password});
+    if (error) {
+      errEl.textContent = 'Pogrešan email ili lozinka.';
+      btn.disabled = false;
+      btn.textContent = 'Prijavi se';
+      return;
+    }
+    await enterOwnerApp(data.user);
+  } else {
+    const { data, error } = await sb.auth.signUp({email, password});
+    if (error) {
+      errEl.textContent = error.message || 'Greška pri registraciji.';
+      btn.disabled = false;
+      btn.textContent = 'Registriraj se';
+      return;
+    }
+    if (data.user) {
+      _pendingSignupUser = data.user;
+      showScreen('screen-cafe-setup');
+    } else {
+      errEl.textContent = 'Provjeri email za potvrdu registracije.';
+    }
+    btn.disabled = false;
+    btn.textContent = 'Registriraj se';
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// CAFE SETUP (first login)
+// ══════════════════════════════════════════════════════════
+async function handleCafeSetup() {
+  const cafeName = document.getElementById('setup-cafe-name').value.trim();
+  const ownerName = document.getElementById('setup-owner-name').value.trim();
+  const ownerPhone = document.getElementById('setup-owner-phone').value.trim().replace(/\D/g,'');
+  const btn = document.getElementById('btn-setup-save');
+  if (!cafeName) { showToast('Upiši naziv kafića'); return; }
+  if (!ownerName) { showToast('Upiši svoje ime'); return; }
+  btn.disabled = true;
+
+  try {
+    // Use stored signup user (email confirmation pending) or fetch current session user
+    let user = _pendingSignupUser;
+    if (!user) {
+      const { data } = await sb.auth.getUser();
+      user = data?.user;
+    }
+    if (!user) {
+      showToast('Sesija istekla. Prijavi se ponovo.');
+      btn.disabled = false;
+      showScreen('screen-owner-auth');
+      return;
+    }
+
+    await sb.auth.updateUser({ data: { display_name: ownerName, phone: ownerPhone } });
+    const { data: cafe, error } = await sb.from('cafes').insert({ name: cafeName, owner_id: user.id }).select().single();
+    if (error) {
+      showToast('Greška: ' + (error.message || 'Nije moguće kreirati kafić.'));
+      btn.disabled = false;
+      return;
+    }
+    _pendingSignupUser = null;
+    const enrichedUser = {...user, user_metadata: {display_name: ownerName, phone: ownerPhone}};
+    await enterOwnerApp(enrichedUser);
+  } catch(e) {
+    showToast('Greška: ' + (e.message || 'Nepoznata greška.'));
+  }
+  btn.disabled = false;
+}
+
+// ══════════════════════════════════════════════════════════
+// INVITE FLOW
+// ══════════════════════════════════════════════════════════
+let _inviteWaiter = null;
+let _inviteStep = 'setup'; // 'setup' | 'confirm' | 'recover'
+let _invitePinFirst = '';
+let _invitePinBuf = '';
+let _inviteVerifying = false;
+
+async function handleInviteLoad(token) {
+  const { data: waiter, error } = await sb.from('waiters').select('*').eq('invite_token', token).single();
+  document.getElementById('invite-loading').style.display = 'none';
+  if (error || !waiter) {
+    document.getElementById('invite-error').style.display = 'block';
+    return;
+  }
+  _inviteWaiter = waiter;
+  const { data: cafe } = await sb.from('cafes').select('name').eq('id', waiter.cafe_id).single();
+
+  document.getElementById('invite-avatar').style.background = waiter.color || AVATAR_COLORS[0];
+  document.getElementById('invite-avatar').textContent = initials(waiter.name);
+  document.getElementById('invite-waiter-name').textContent = waiter.name;
+  document.getElementById('invite-cafe-name').textContent = cafe?.name || '';
+  document.getElementById('invite-content').style.display = 'block';
+
+  if (!waiter.joined_at) {
+    // New user — PIN setup
+    _inviteStep = 'setup';
+    _invitePinFirst = '';
+    _invitePinBuf = '';
+    document.getElementById('invite-instruction').textContent = 'Postavi 4-znamenkasti PIN za prijavu.';
+    document.getElementById('invite-confirm-label').style.display = 'none';
+  } else {
+    // Returning user on new device — verify existing PIN
+    _inviteStep = 'recover';
+    _invitePinBuf = '';
+    document.getElementById('invite-instruction').textContent = 'Upiši PIN za prijavu na ovom uređaju.';
+    document.getElementById('invite-confirm-label').style.display = 'none';
+  }
+  renderInviteDots([]);
+
+  document.getElementById('invite-keypad').querySelectorAll('.key[data-key]').forEach(btn => {
+    btn.onclick = () => handleInviteKey(btn.dataset.key);
+  });
+}
+
+function renderInviteDots(buf) {
+  for (let i = 0; i < 4; i++) {
+    const d = document.getElementById(`inv-dot-${i}`);
+    if (!d) continue;
+    d.classList.toggle('filled', i < buf.length);
+    d.classList.remove('error');
+  }
+}
+
+async function handleInviteKey(k) {
+  if (_inviteVerifying) return;
+  const err = document.getElementById('invite-pin-error');
+  err.textContent = '';
+  if (k === 'del') {
+    _invitePinBuf = _invitePinBuf.slice(0, -1);
+    renderInviteDots(_invitePinBuf);
+    return;
+  }
+  if (_invitePinBuf.length >= 4) return;
+  _invitePinBuf += k;
+  renderInviteDots(_invitePinBuf);
+
+  if (_invitePinBuf.length < 4) return;
+
+  if (_inviteStep === 'setup') {
+    // First entry — ask to confirm
+    _invitePinFirst = _invitePinBuf;
+    _invitePinBuf = '';
+    _inviteStep = 'confirm';
+    document.getElementById('invite-confirm-label').style.display = 'block';
+    document.getElementById('invite-instruction').textContent = 'Potvrdi PIN.';
+    renderInviteDots([]);
+    return;
+  }
+
+  if (_inviteStep === 'confirm') {
+    if (_invitePinBuf !== _invitePinFirst) {
+      err.textContent = 'PINovi se ne podudaraju. Pokušaj ponovo.';
+      _invitePinBuf = '';
+      _invitePinFirst = '';
+      _inviteStep = 'setup';
+      document.getElementById('invite-confirm-label').style.display = 'none';
+      document.getElementById('invite-instruction').textContent = 'Postavi 4-znamenkasti PIN za prijavu.';
+      renderInviteDots([]);
+      return;
+    }
+    // Set PIN
+    _inviteVerifying = true;
+    const { error } = await sb.rpc('set_waiter_pin', {
+      p_waiter_id: _inviteWaiter.id,
+      p_pin: _invitePinBuf,
+    });
+    _inviteVerifying = false;
+    if (error) { err.textContent = 'Greška. Pokušaj ponovo.'; _invitePinBuf = ''; renderInviteDots([]); return; }
+    const session = {id: _inviteWaiter.id, name: _inviteWaiter.name, cafe_id: _inviteWaiter.cafe_id, color: _inviteWaiter.color || AVATAR_COLORS[0]};
+    setWaiterSession(session);
+    // Remove invite token from URL
+    history.replaceState({}, '', location.pathname);
+    showToast('PIN postavljen! Dobrodošli 👋');
+    await enterWaiterApp(session);
+    return;
+  }
+
+  if (_inviteStep === 'recover') {
+    _inviteVerifying = true;
+    const { data: ok } = await sb.rpc('verify_waiter_pin', {
+      p_waiter_id: _inviteWaiter.id,
+      p_pin: _invitePinBuf,
+    });
+    _inviteVerifying = false;
+    if (ok) {
+      const session = {id: _inviteWaiter.id, name: _inviteWaiter.name, cafe_id: _inviteWaiter.cafe_id, color: _inviteWaiter.color || AVATAR_COLORS[0]};
+      setWaiterSession(session);
+      history.replaceState({}, '', location.pathname);
+      await enterWaiterApp(session);
+    } else {
+      for (let i = 0; i < 4; i++) {
+        const d = document.getElementById(`inv-dot-${i}`);
+        if (d) d.classList.add('error');
+      }
+      setTimeout(() => { _invitePinBuf = ''; renderInviteDots([]); }, 400);
+      err.textContent = 'Pogrešan PIN.';
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// LOGOUT
+// ══════════════════════════════════════════════════════════
+async function logout() {
+  if (isOwner()) {
+    await sb.auth.signOut();
+  } else {
+    clearWaiterSession();
+  }
+  STATE.currentUser = null;
+  STATE.waiters = [];
+  STATE.requests = [];
+  STATE.dateSchedule = {};
+  STATE.cafe = null;
+  showScreen('screen-login');
+  const ws = getWaiterSession();
+  if (ws) setupWaiterLoginScreen(ws);
+  else setupLoginNoSession();
+}
+
+// ══════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════
+function isoDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function today() { return isoDate(new Date()); }
+function todayDate() { return new Date(); }
+function initials(name) { return (name||'?').split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2); }
+function getMonday(d) {
+  const dt = new Date(d);
+  const day = dt.getDay();
+  dt.setDate(dt.getDate() + (day===0?-6:1-day));
+  dt.setHours(0,0,0,0);
+  return dt;
+}
+function addDays(d, n) { const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+function formatDate(iso) { const [y,m,d]=iso.split('-'); return `${d}.${m}.${y}`; }
+function shiftLabel(s) {
+  if (s==='jutro') return 'I Jutro';
+  if (s==='međusmjena') return 'II Međusmjena';
+  if (s==='popodne') return 'III Popodne';
+  return '📅 Cijeli dan';
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+function waiterById(id) { return STATE.waiters.find(w=>w.id===id); }
+function isOwner() { return STATE.currentUser === 'owner'; }
+function currentWaiter() { return isOwner() ? null : STATE.currentUser; }
+function dayOfWeek(iso) { const d=new Date(iso+'T12:00:00'); const day=d.getDay(); return day===0?6:day-1; }
+
+function worksShift(waiter, iso, shift) {
+  if (isOnVacation(waiter, iso)) return false;
+  const override = STATE.dateSchedule[iso]?.[waiter.id];
+  if (override !== undefined) return override.includes(shift);
+  const dow = dayOfWeek(iso);
+  if (shift === 'jutro') return !!waiter.pattern.m[dow];
+  if (shift === 'međusmjena') return dow < 6 && !!(waiter.pattern.s||[])[dow];
+  if (shift === 'popodne') return dow < 6 && !!waiter.pattern.a[dow];
+  return false;
+}
+
+function isOnVacation(waiter, iso) {
+  return (waiter.vacations||[]).some(v => v.from && v.to && iso >= v.from && iso <= v.to);
+}
+
+function inviteUrl(token) {
+  return `${location.origin}${location.pathname}?invite=${token}`;
+}
+
+// ══════════════════════════════════════════════════════════
+// THEME
+// ══════════════════════════════════════════════════════════
+function applyTheme(t) {
+  STATE.theme = t;
+  localStorage.setItem('zm_b_theme', t);
+  document.documentElement.setAttribute('data-theme', t);
+  const isDark = t === 'dark';
+  const icon = isDark ? '☀️' : '🌙';
+  ['theme-toggle-btn','theme-toggle-btn-2','theme-toggle-btn-3','theme-toggle-btn-4','theme-toggle-btn-5']
+    .forEach(id => { const el=document.getElementById(id); if(el) el.textContent=icon; });
+}
+function toggleTheme() { applyTheme(STATE.theme==='light'?'dark':'light'); }
+
+// ══════════════════════════════════════════════════════════
+// ONBOARDING
+// ══════════════════════════════════════════════════════════
+let obStep = 0;
+function startOnboarding() {
+  obStep = 0;
+  renderObStep();
+  document.getElementById('ob-overlay').classList.add('open');
+}
+function renderObStep() {
+  const s = ONBOARDING_STEPS[obStep];
+  document.getElementById('ob-icon').textContent = s.icon;
+  document.getElementById('ob-title').textContent = s.title;
+  document.getElementById('ob-body').textContent = s.body;
+  document.getElementById('ob-next').textContent = obStep < ONBOARDING_STEPS.length-1 ? 'Dalje →' : 'Počnimo!';
+  document.getElementById('ob-dots').innerHTML = ONBOARDING_STEPS.map((_,i) => `<div class="ob-dot${i===obStep?' active':''}"></div>`).join('');
+}
+function closeOnboarding() { document.getElementById('ob-overlay').classList.remove('open'); }
+
+// ══════════════════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════════════════
+function getVisibleTabOrder() {
+  return ['home','swaps','week','month','admin'].filter(t => {
+    const btn = document.querySelector(`.tab-btn[data-tab="${t}"]`);
+    return btn && btn.style.display !== 'none';
+  });
+}
+
+function switchTab(tab, dir) {
+  const order = getVisibleTabOrder();
+  if (!order.includes(tab)) return;
+  STATE.activeTab = tab;
+  order.forEach(t => {
+    const el = document.getElementById(`tab-${t}`);
+    if (t === tab) { el.style.display = 'flex'; el.style.flex = '1'; }
+    else { el.style.display = 'none'; el.style.flex = ''; }
+  });
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+  if (dir) {
+    const el = document.getElementById(`tab-${tab}`);
+    el.classList.remove('slide-in-left','slide-in-right');
+    void el.offsetWidth;
+    el.classList.add(dir==='left'?'slide-in-right':'slide-in-left');
+    setTimeout(() => el.classList.remove('slide-in-left','slide-in-right'), 220);
+  }
+  if (tab === 'home') renderHome();
+  if (tab === 'swaps') renderSwaps();
+  if (tab === 'week') renderWeekView();
+  if (tab === 'month') renderMonthView();
+  if (tab === 'admin') renderAdmin();
+}
+
+// ══════════════════════════════════════════════════════════
+// BADGES
+// ══════════════════════════════════════════════════════════
+function updateBadges() {
+  const swapBadge = document.getElementById('swap-badge');
+  document.getElementById('admin-badge').style.display = 'none';
+  if (isOwner()) {
+    const n = STATE.requests.filter(r=>r.status==='pending_approval').length;
+    swapBadge.style.display = n ? 'flex' : 'none';
+    if (n) swapBadge.textContent = n;
+  } else {
+    const w = currentWaiter();
+    const n = STATE.requests.filter(r=>r.status==='open'&&r.waiterId!==w?.id).length;
+    swapBadge.style.display = n ? 'flex' : 'none';
+    if (n) swapBadge.textContent = n;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// HOME
+// ══════════════════════════════════════════════════════════
+let ownerGapExpanded = false;
+let hoursExpanded = false;
+let hoursViewOffset = 0;
+
+function renderHome() {
+  const ownerView = isOwner();
+  document.getElementById('owner-home').style.display = ownerView ? 'flex' : 'none';
+  document.getElementById('waiter-home').style.display = ownerView ? 'none' : 'flex';
+  document.getElementById('home-greeting').textContent = ownerView ? STATE.owner.name : (currentWaiter()?.name||'');
+  if (ownerView) renderOwnerHome();
+  else { renderWeekStrip(); renderMyShifts(); }
+}
+
+function calcWaiterHours(waiter, targetY, targetM) {
+  const now = todayDate();
+  const y = targetY !== undefined ? targetY : now.getFullYear();
+  const m = targetM !== undefined ? targetM : now.getMonth();
+  const todayIso = isoDate(now);
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  let worked = 0, projected = 0;
+  for (let day = 1; day <= daysInMonth; day++) {
+    const d = new Date(y, m, day);
+    const iso = isoDate(d);
+    let h = 0;
+    ['jutro','međusmjena','popodne'].forEach(shift => {
+      if (!worksShift(waiter, iso, shift)) return;
+      const off = STATE.requests.find(r=>r.waiterId===waiter.id&&r.date===iso&&r.status==='approved'&&(r.shift===shift||r.shift==='oboje'));
+      if (!off) h += 8;
+    });
+    if (iso <= todayIso) worked += h; else projected += h;
+  }
+  return {worked, total: worked + projected};
+}
+
+function renderOwnerHome() {
+  const now = todayDate();
+  const pending = STATE.requests.filter(r=>r.status==='pending_approval');
+  const pendingCard = pending.length ? `
+    <div class="section-label" style="margin-top:0;">Zahtjevi na čekanju</div>
+    <div class="owner-pending-card has-pending" id="owner-pending-tap">
+      <span class="owner-pending-icon">⏳</span>
+      <span class="owner-pending-text">${pending.length} zahtjev${pending.length>1?'a':''} čeka odobrenje</span>
+      <span style="color:var(--text-3);">→</span>
+    </div>` : '';
+
+  const gapRows = [];
+  for (let i = 0; i < 14; i++) {
+    const d = addDays(now, i);
+    const iso = isoDate(d);
+    const dow = dayOfWeek(iso);
+    const shiftsToCheck = dow===6 ? ['jutro'] : ['jutro','međusmjena','popodne'];
+    const empty = shiftsToCheck.filter(s => STATE.waiters.filter(w=>worksShift(w,iso,s)).length === 0);
+    if (empty.length) gapRows.push({iso, d, dow, empty});
+  }
+  const gapNums = {jutro:'I',međusmjena:'II',popodne:'III'};
+  const visibleGaps = ownerGapExpanded ? gapRows : gapRows.slice(0,4);
+  const hasMore = gapRows.length > 4;
+  const gapRows2 = gapRows.length
+    ? visibleGaps.map(g=>`<div class="owner-gap-row" data-iso="${g.iso}">
+        <div class="owner-gap-date">${DAY_LABELS_FULL[g.dow]}, ${g.d.getDate()}. ${g.d.toLocaleString('hr',{month:'short'})}</div>
+        <div class="owner-gap-shifts">${g.empty.map(s=>`<span class="owner-gap-badge">${gapNums[s]}</span>`).join('')}</div>
+        <span style="font-size:12px;color:var(--text-3);margin-left:4px;">→</span>
+      </div>`).join('')
+    : `<div class="owner-gap-empty">Nema praznih smjena idućih 14 dana</div>`;
+  const gapContent = gapRows2 + (hasMore ? `<div class="hours-expand-row" id="gap-expand-btn">${ownerGapExpanded?'▴ Manje':`▾ Prikaži sve (${gapRows.length})`}</div>` : '');
+
+  const hoursTarget = new Date(now.getFullYear(), now.getMonth()+hoursViewOffset, 1);
+  const hoursY = hoursTarget.getFullYear(), hoursM = hoursTarget.getMonth();
+  const hoursMonthLabel = `${MONTH_NAMES[hoursM]} ${hoursY!==now.getFullYear()?hoursY:''}`.trim();
+  const hoursHasMore = STATE.waiters.length > 4;
+  const visibleWaiters = hoursExpanded ? STATE.waiters : STATE.waiters.slice(0,4);
+  let hoursRows = '';
+  visibleWaiters.forEach(waiter => {
+    const {worked, total} = calcWaiterHours(waiter, hoursY, hoursM);
+    const barPct = total > 0 ? Math.round((worked/total)*100) : 0;
+    hoursRows += `<div class="owner-hours-row">
+      <div class="owner-hours-name">${waiter.name.split(' ')[0]}</div>
+      <div class="owner-hours-bar-bg"><div class="owner-hours-bar-fill" style="width:${barPct}%;background:${waiter.color};"></div></div>
+      <div class="owner-hours-nums"><strong>${worked}h</strong> <span class="owner-hours-proj">/ ~${total}h</span></div>
+    </div>`;
+  });
+  if (hoursHasMore) hoursRows += `<div class="hours-expand-row" id="hours-expand-btn">${hoursExpanded?'▴ Manje':`▾ Prikaži sve (${STATE.waiters.length})`}</div>`;
+
+  document.getElementById('owner-home').innerHTML = `
+    ${pendingCard}
+    <details class="owner-hours-details" open>
+      <summary class="owner-hours-summary"><span>Dani bez pokrivenih smjena <span class="hours-chevron"></span></span></summary>
+      <div class="owner-gap-card">${gapContent}</div>
+    </details>
+    <details class="owner-hours-details" open>
+      <summary class="owner-hours-summary">
+        <span>Radni sati — ${hoursMonthLabel} <span class="hours-chevron"></span></span>
+        <div class="hours-nav-group">
+          <button class="hours-nav-btn" id="hours-prev">◀</button>
+          <button class="hours-nav-btn" id="hours-next">▶</button>
+        </div>
+      </summary>
+      <div class="owner-hours-card">${hoursRows}</div>
+    </details>`;
+
+  document.getElementById('owner-pending-tap')?.addEventListener('click', () => { if (pending.length) switchTab('swaps'); });
+  document.querySelectorAll('.owner-gap-row[data-iso]').forEach(row => row.addEventListener('click', () => openDayDetail(row.dataset.iso)));
+  document.getElementById('gap-expand-btn')?.addEventListener('click', () => { ownerGapExpanded = !ownerGapExpanded; renderOwnerHome(); });
+  document.getElementById('hours-expand-btn')?.addEventListener('click', () => { hoursExpanded = !hoursExpanded; renderOwnerHome(); });
+  document.getElementById('hours-prev')?.addEventListener('click', e => { e.stopPropagation(); hoursViewOffset = Math.max(-3, hoursViewOffset-1); hoursExpanded=false; renderOwnerHome(); });
+  document.getElementById('hours-next')?.addEventListener('click', e => { e.stopPropagation(); hoursViewOffset = Math.min(3, hoursViewOffset+1); hoursExpanded=false; renderOwnerHome(); });
+}
+
+function renderWeekStrip() {
+  const strip = document.getElementById('week-strip');
+  const mon = getMonday(todayDate());
+  const todayIso = today();
+  let html = '';
+  for (let i = 0; i < 7; i++) {
+    const d = addDays(mon, i);
+    const iso = isoDate(d);
+    const isToday = iso === todayIso;
+    const w = currentWaiter();
+    let shiftTxt = '';
+    if (w) {
+      const parts = [];
+      if (worksShift(w,iso,'jutro')) parts.push('I');
+      if (worksShift(w,iso,'međusmjena')) parts.push('II');
+      if (worksShift(w,iso,'popodne')) parts.push('III');
+      shiftTxt = parts.join('·');
+    }
+    const hasReq = STATE.requests.some(r=>r.date===iso&&r.status==='open');
+    html += `<div class="day-chip${isToday?' today':''}${hasReq?' has-request':''}">
+      <div class="day-chip-label">${DAY_LABELS[i]}</div>
+      <div class="day-chip-num">${d.getDate()}</div>
+      ${shiftTxt?`<div class="day-chip-shift">${shiftTxt}</div>`:''}
+    </div>`;
+  }
+  strip.innerHTML = html;
+}
+
+function renderMyShifts() {
+  const list = document.getElementById('my-shifts-list');
+  const w = currentWaiter();
+  if (isOwner()||!w) { list.innerHTML=''; return; }
+  let html = '', count = 0;
+  for (let i = 0; i < 14 && count < 5; i++) {
+    const d = addDays(todayDate(), i);
+    const iso = isoDate(d);
+    const dow = dayOfWeek(iso);
+    ['jutro','međusmjena','popodne'].forEach(shift => {
+      if (count >= 5) return;
+      if (!worksShift(w, iso, shift)) return;
+      const req = STATE.requests.find(r=>r.waiterId===w.id&&r.date===iso&&(r.shift===shift||r.shift==='oboje'));
+      let statusHtml = '<span class="shift-card-status status-ok">Potvrđeno</span>';
+      if (req) {
+        if (req.status==='open') statusHtml='<span class="shift-card-status status-pending">Zahtjev poslan</span>';
+        else if (req.status==='approved') statusHtml='<span class="shift-card-status status-off">Slobodno ✓</span>';
+        else if (req.status==='pending_approval') statusHtml='<span class="shift-card-status status-pending">Na odobrenju</span>';
+      }
+      const shiftTime = shift==='jutro'?'06:00 – 14:00':shift==='međusmjena'?'10:00 – 18:00':'14:00 – 22:00';
+      const shiftNum = shift==='jutro'?'I':shift==='međusmjena'?'II':'III';
+      html += `<div class="shift-card">
+        <div class="shift-card-icon ${shift}">${shiftNum}</div>
+        <div class="shift-card-info">
+          <div class="shift-card-date">${DAY_LABELS_FULL[dow]}, ${formatDate(iso)}</div>
+          <div class="shift-card-time">${shiftTime}</div>
+        </div>${statusHtml}</div>`;
+      count++;
+    });
+  }
+  if (!html) html = `<div class="empty-state"><div class="empty-icon">☕</div><div class="empty-title">Nema nadolazećih smjena</div><div class="empty-sub">Uživaj!</div></div>`;
+  list.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════
+// REQUEST MODAL
+// ══════════════════════════════════════════════════════════
+let reqCalDate = new Date();
+let reqSelectedDate = null;
+let reqSelectedShift = null;
+
+function openRequestModal() {
+  reqCalDate = new Date();
+  reqSelectedDate = null;
+  reqSelectedShift = null;
+  document.getElementById('req-note').value = '';
+  document.getElementById('req-notify-bar').style.display = 'none';
+  document.getElementById('btn-submit-request').style.display = 'flex';
+  document.getElementById('btn-cancel-request').textContent = 'Odustani';
+  renderReqCalendar();
+  renderShiftPicker();
+  document.getElementById('modal-request').classList.add('open');
+}
+
+function closeRequestModal() {
+  const overlay = document.getElementById('modal-request');
+  const modal = overlay.querySelector('.modal');
+  modal.classList.add('closing');
+  setTimeout(() => { modal.classList.remove('closing'); overlay.classList.remove('open'); }, 250);
+}
+
+function renderReqCalendar() {
+  const y = reqCalDate.getFullYear(), m = reqCalDate.getMonth();
+  document.getElementById('req-cal-month').textContent = `${MONTH_NAMES[m]} ${y}`;
+  const cal = document.getElementById('req-calendar');
+  const firstDay = new Date(y, m, 1);
+  const startDow = firstDay.getDay()===0 ? 6 : firstDay.getDay()-1;
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const todayIso = today();
+  const w = currentWaiter();
+  let html = '';
+  DAY_LABELS.forEach(l => { html += `<div class="cal-header">${l}</div>`; });
+  for (let i = 0; i < startDow; i++) html += '<div class="cal-day empty"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const iso = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isPast = iso < todayIso;
+    const isSelected = iso === reqSelectedDate;
+    const isTod = iso === todayIso;
+    const hasReq = STATE.requests.some(r=>r.waiterId===w?.id&&r.date===iso&&r.status!=='approved');
+    const worksDay = w && (['jutro','međusmjena','popodne'].some(s=>worksShift(w,iso,s)));
+    let cls = 'cal-day';
+    if (isPast) cls += ' past';
+    else if (!worksDay) cls += ' off-day';
+    else if (isSelected) cls += ' selected';
+    else if (isTod) cls += ' today';
+    if (hasReq) cls += ' has-request';
+    html += `<div class="${cls}" data-iso="${iso}">${d}${hasReq&&!isSelected?'<div class="cal-dot"></div>':''}</div>`;
+  }
+  cal.innerHTML = html;
+  cal.querySelectorAll('.cal-day:not(.empty):not(.past):not(.off-day)').forEach(el => {
+    el.addEventListener('click', () => { reqSelectedDate = el.dataset.iso; renderReqCalendar(); renderShiftPicker(); });
+  });
+}
+
+function renderShiftPicker() {
+  const w = currentWaiter();
+  document.getElementById('req-shift-picker').querySelectorAll('.shift-option').forEach(opt => {
+    const s = opt.dataset.shift;
+    opt.classList.remove('selected','disabled');
+    if (!reqSelectedDate) { opt.classList.add('disabled'); return; }
+    if (s==='jutro'&&!worksShift(w,reqSelectedDate,'jutro')) opt.classList.add('disabled');
+    if (s==='međusmjena'&&!worksShift(w,reqSelectedDate,'međusmjena')) opt.classList.add('disabled');
+    if (s==='popodne'&&!worksShift(w,reqSelectedDate,'popodne')) opt.classList.add('disabled');
+    if (s==='oboje'&&(!worksShift(w,reqSelectedDate,'jutro')||!worksShift(w,reqSelectedDate,'popodne'))) opt.classList.add('disabled');
+    if (dayOfWeek(reqSelectedDate)===6&&s==='popodne') opt.classList.add('disabled');
+    if (s === reqSelectedShift) opt.classList.add('selected');
+  });
+}
+
+async function submitRequest() {
+  if (!reqSelectedDate) { showToast('Odaberi datum'); return; }
+  if (!reqSelectedShift) { showToast('Odaberi smjenu'); return; }
+  const w = currentWaiter();
+  const note = document.getElementById('req-note').value.trim();
+  const btn = document.getElementById('btn-submit-request');
+  btn.disabled = true;
+  const { data, error } = await sb.from('shift_requests').insert({
+    cafe_id: STATE.cafe.id,
+    waiter_id: w.id,
+    date: reqSelectedDate,
+    shift: reqSelectedShift,
+    note,
+    status: 'open',
+  }).select().single();
+  btn.disabled = false;
+  if (error) { showToast('Greška. Pokušaj ponovo.'); return; }
+  STATE.requests.push(mapRequest(data));
+
+  // Notify owner via WhatsApp
+  const msg = `[ZamijeniMe] ${w.name} traži slobodno ${shiftLabel(reqSelectedShift)} dana ${formatDate(reqSelectedDate)}.${note?' Napomena: '+note:''}`;
+  const waUrl = `https://wa.me/${STATE.owner.phone||''}?text=${encodeURIComponent(msg)}`;
+  document.getElementById('req-notify-bar').innerHTML = `
+    <div class="notify-bar">
+      <div class="notify-title">📣 Obavijesti vlasnika</div>
+      <div class="notify-btns">
+        <a class="btn-wa" href="${waUrl}" target="_blank">💬 WhatsApp</a>
+      </div>
+    </div>`;
+  document.getElementById('req-notify-bar').style.display = 'block';
+  document.getElementById('btn-submit-request').style.display = 'none';
+  document.getElementById('btn-cancel-request').textContent = 'Zatvori';
+  updateBadges();
+  renderHome();
+  showToast('Zahtjev poslan!');
+}
+
+// ══════════════════════════════════════════════════════════
+// SWAPS
+// ══════════════════════════════════════════════════════════
+let swapFilter = 'open';
+
+function renderSwaps() {
+  const list = document.getElementById('swaps-list');
+  const w = currentWaiter();
+  const todayIso = today();
+  const mineBtn = document.getElementById('filter-mine');
+  const pendingBtn = document.getElementById('filter-pending');
+  if (isOwner()) {
+    if (mineBtn) mineBtn.style.display = 'none';
+    if (pendingBtn) pendingBtn.style.display = '';
+    if (swapFilter === 'mine') swapFilter = 'pending';
+  } else {
+    if (mineBtn) mineBtn.style.display = '';
+    if (pendingBtn) pendingBtn.style.display = 'none';
+    if (swapFilter === 'pending') swapFilter = 'open';
+  }
+
+  if (isOwner() && swapFilter === 'pending') {
+    const pending = STATE.requests.filter(r=>r.status==='pending_approval');
+    if (!pending.length) { list.innerHTML=`<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">Nema zahtjeva na čekanju</div></div>`; return; }
+    list.innerHTML = pending.map(r => {
+      const req = waiterById(r.waiterId);
+      const cov = waiterById(r.coveredBy);
+      const shiftCls = r.shift==='jutro'?'chip-morning':r.shift==='popodne'?'chip-afternoon':'chip-both';
+      return `<div class="swap-card">
+        <div class="swap-card-header">
+          <div class="avatar" style="background:${req?.color||'#94a3b8'}">${initials(req?.name||'?')}</div>
+          <div><div class="swap-person">${req?.name||'?'} → slobodno</div><div class="swap-date">${shiftLabel(r.shift)}, ${formatDate(r.date)}</div></div>
+        </div>
+        <div class="swap-details">
+          <span class="detail-chip ${shiftCls}">${shiftLabel(r.shift)}</span>
+          <span class="detail-chip chip-covered">Pokriva: ${cov?.name||'?'}</span>
+        </div>
+        ${r.note?`<div class="swap-note">"${r.note}"</div>`:''}
+        <div class="swap-actions">
+          <button class="btn-approve" data-rid="${r.id}" data-action="approve">✓ Odobri</button>
+          <button class="btn-reject" data-rid="${r.id}" data-action="reject">✗ Odbij</button>
+        </div>
+      </div>`;
+    }).join('');
+    list.querySelectorAll('[data-action]').forEach(btn => btn.addEventListener('click', () => handleApproval(btn.dataset.rid, btn.dataset.action)));
+    return;
+  }
+
+  let filtered = STATE.requests.filter(r => {
+    if (swapFilter === 'open') return r.status==='open' && (!w||r.waiterId!==w.id) && r.date>=todayIso;
+    if (swapFilter === 'mine') return w && r.waiterId===w.id;
+    if (swapFilter === 'covered') return r.status==='approved'||r.status==='pending_approval';
+    return true;
+  });
+  if (!filtered.length) {
+    list.innerHTML=`<div class="empty-state"><div class="empty-icon">${swapFilter==='open'?'🎉':'📋'}</div><div class="empty-title">${swapFilter==='open'?'Nema otvorenih zamjena':'Nema zahtjeva'}</div></div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(r => {
+    const requester = waiterById(r.waiterId);
+    const coverer = r.coveredBy ? waiterById(r.coveredBy) : null;
+    const isMine = w && r.waiterId === w.id;
+    const alreadyCoveredByMe = w && r.coveredBy === w.id;
+    const shiftCls = r.shift==='jutro'?'chip-morning':r.shift==='popodne'?'chip-afternoon':'chip-both';
+    let statusChip = '';
+    if (r.status==='pending_approval') statusChip=`<span class="detail-chip chip-covered">⏳ Na odobrenju (${coverer?.name})</span>`;
+    else if (r.status==='approved') statusChip=`<span class="detail-chip chip-covered">✓ Odobreno (${coverer?.name})</span>`;
+    let actionBtn = '';
+    if (!isMine && r.status==='open' && !isOwner()) {
+      actionBtn = alreadyCoveredByMe
+        ? `<button class="btn-cover covered" disabled>✓ Preuzeo/la si</button>`
+        : `<button class="btn-cover" data-rid="${r.id}">🙋 Preuzimam smjenu</button>`;
+    }
+    return `<div class="swap-card">
+      <div class="swap-card-header">
+        <div class="avatar" style="background:${requester?.color||'#94a3b8'}">${initials(requester?.name||'?')}</div>
+        <div><div class="swap-person">${requester?.name||'Nepoznato'}</div><div class="swap-date">${formatDate(r.date)}</div></div>
+      </div>
+      <div class="swap-details"><span class="detail-chip ${shiftCls}">${shiftLabel(r.shift)}</span>${statusChip}</div>
+      ${r.note?`<div class="swap-note">"${r.note}"</div>`:''}
+      ${actionBtn?`<div class="swap-actions">${actionBtn}</div>`:''}
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.btn-cover[data-rid]').forEach(btn => btn.addEventListener('click', () => coverRequest(btn.dataset.rid)));
+}
+
+async function coverRequest(rid) {
+  const r = STATE.requests.find(x=>x.id===rid);
+  if (!r) return;
+  const w = currentWaiter();
+  const { error } = await sb.from('shift_requests').update({ covered_by: w.id, status: 'pending_approval' }).eq('id', rid);
+  if (error) { showToast('Greška. Pokušaj ponovo.'); return; }
+  r.coveredBy = w.id;
+  r.status = 'pending_approval';
+
+  const requester = waiterById(r.waiterId);
+  const msg = `[ZamijeniMe] ${w.name} nudi pokrivanje smjene za ${requester?.name} — ${shiftLabel(r.shift)} dana ${formatDate(r.date)}. Molimo potvrdi u aplikaciji.`;
+  const waUrl = `https://wa.me/${STATE.owner.phone||''}?text=${encodeURIComponent(msg)}`;
+  showToast('Zamjena ponuđena! Obavijesti vlasnika 👇');
+  setTimeout(() => {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay open';
+    overlay.innerHTML = `<div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Obavijesti vlasnika</div>
+      <div class="modal-sub">Pošalji potvrdu vlasniku kako bi odobrio zamjenu.</div>
+      <div class="notify-bar" style="margin-top:0;"><div class="notify-btns"><a class="btn-wa" href="${waUrl}" target="_blank">💬 WhatsApp</a></div></div>
+      <button class="btn-secondary" style="margin-top:12px;" id="close-cover-modal">Zatvori</button>
+    </div>`;
+    document.body.appendChild(overlay);
+    document.getElementById('close-cover-modal').addEventListener('click', () => document.body.removeChild(overlay));
+  }, 300);
+  updateBadges();
+  renderSwaps();
+}
+
+async function handleApproval(rid, action) {
+  const r = STATE.requests.find(x=>x.id===rid);
+  if (!r) return;
+  const newStatus = action==='approve' ? 'approved' : 'open';
+  const updates = action==='approve'
+    ? {status:'approved', approved_by:'owner'}
+    : {status:'open', covered_by:null};
+  const { error } = await sb.from('shift_requests').update(updates).eq('id', rid);
+  if (error) { showToast('Greška. Pokušaj ponovo.'); return; }
+  r.status = newStatus;
+  if (action === 'reject') { r.coveredBy = null; }
+  else { r.approvedBy = 'owner'; }
+  showToast(action==='approve' ? 'Zamjena odobrena ✓' : 'Zamjena odbijena');
+  updateBadges();
+  renderSwaps();
+}
+
+// ══════════════════════════════════════════════════════════
+// WEEK VIEW
+// ══════════════════════════════════════════════════════════
+function renderWeekView() {
+  const mon = addDays(getMonday(todayDate()), STATE.weekOffset*7);
+  const days = Array.from({length:7}, (_,i) => addDays(mon,i));
+  const isodays = days.map(isoDate);
+  const todayIso = today();
+  const cw = currentWaiter();
+  const from = `${mon.getDate()}.${mon.getMonth()+1}`;
+  const to = `${days[6].getDate()}.${days[6].getMonth()+1}.${days[6].getFullYear()}`;
+  document.getElementById('week-range-label').textContent = `${from} – ${to}`;
+
+  let html = `<div class="week-table-header"><div class="week-col-head"></div>`;
+  days.forEach((d,i) => {
+    const isT = isodays[i]===todayIso;
+    html += `<div class="week-col-head${isT?' today-col':''}">${DAY_LABELS[i]}<br>${d.getDate()}</div>`;
+  });
+  html += '</div>';
+
+  ['jutro','međusmjena','popodne'].forEach(shift => {
+    const rowLabel = shift==='jutro'?'I':shift==='međusmjena'?'II':'III';
+    html += `<div class="week-row"><div class="week-row-label">${rowLabel}</div>`;
+    isodays.forEach((iso,di) => {
+      const dow = dayOfWeek(iso);
+      const isSundayAft = dow===6&&(shift==='popodne'||shift==='međusmjena');
+      const isT = iso===todayIso;
+      let cellContent = '', hasGap = false;
+      if (!isSundayAft) {
+        const workers = STATE.waiters.filter(w=>worksShift(w,iso,shift));
+        const offIds = STATE.requests.filter(r=>r.date===iso&&(r.shift===shift||r.shift==='oboje')&&r.status==='approved').map(r=>r.waiterId);
+        const active = workers.filter(w=>!offIds.includes(w.id));
+        const pending = STATE.requests.filter(r=>r.date===iso&&(r.shift===shift||r.shift==='oboje')&&r.status==='open');
+        active.forEach(w => {
+          const isMe = cw && w.id===cw.id;
+          cellContent += `<div class="person-chip" style="background:${w.color};${(!isOwner()&&!isMe)?'opacity:0.28;':''}">${initials(w.name)}</div>`;
+        });
+        if (pending.length) { hasGap=true; pending.forEach(r=>{ const w=waiterById(r.waiterId); cellContent+=`<div class="gap-chip">! ${w?.name.split(' ')[0]||'?'}</div>`; }); }
+      } else {
+        cellContent = `<div style="color:var(--text-3);font-size:10px;text-align:center;padding:4px;">—</div>`;
+      }
+      html += `<div class="week-cell${isT?' today-col':''}${hasGap?' gap':''}">${cellContent}</div>`;
+    });
+    html += '</div>';
+  });
+  document.getElementById('week-table').innerHTML = html;
+
+  const legendEl = document.getElementById('week-waiter-legend');
+  if (legendEl) {
+    legendEl.innerHTML = `<div class="section-label" style="margin-top:0;margin-bottom:8px;">Tim</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(2,auto);grid-auto-flow:column;gap:8px;">
+        ${STATE.waiters.map(w=>`<div style="display:flex;align-items:center;gap:5px;min-width:0;">
+          <div style="width:20px;height:20px;border-radius:4px;background:${w.color};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;flex-shrink:0;">${initials(w.name)}</div>
+          <span style="font-size:11px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${w.name.split(' ')[0]}</span>
+        </div>`).join('')}
+      </div>`;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// MONTH VIEW
+// ══════════════════════════════════════════════════════════
+let monthViewDate = new Date();
+
+function renderMonthView() {
+  const y = monthViewDate.getFullYear(), m = monthViewDate.getMonth();
+  const todayIso = today();
+  document.getElementById('month-cal-title').textContent = `${MONTH_NAMES[m]} ${y}`;
+  if (isOwner()) { renderOwnerMonthView(y, m, todayIso); return; }
+  const w = currentWaiter();
+  if (!w) { document.getElementById('month-calendar').innerHTML=''; return; }
+  const firstDay = new Date(y,m,1);
+  const startDow = firstDay.getDay()===0 ? 6 : firstDay.getDay()-1;
+  const daysInMonth = new Date(y,m+1,0).getDate();
+  let html = '<div class="calendar-grid">';
+  DAY_LABELS.forEach(l => { html += `<div class="cal-header">${l}</div>`; });
+  for (let i = 0; i < startDow; i++) html += '<div class="cal-day empty"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const iso = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isPast = iso < todayIso, isToday = iso === todayIso;
+    const approvedOff = STATE.requests.find(r=>r.waiterId===w.id&&r.date===iso&&r.status==='approved');
+    const pendingReq = STATE.requests.find(r=>r.waiterId===w.id&&r.date===iso&&(r.status==='open'||r.status==='pending_approval'));
+    let worksM = worksShift(w,iso,'jutro'), worksA = worksShift(w,iso,'popodne'), worksS = worksShift(w,iso,'međusmjena');
+    if (approvedOff) {
+      if (approvedOff.shift==='jutro'||approvedOff.shift==='oboje') worksM=false;
+      if (approvedOff.shift==='popodne'||approvedOff.shift==='oboje') worksA=false;
+    }
+    const dow = dayOfWeek(iso);
+    const isWeekend = dow>=5;
+    const cellBg = isWeekend ? 'var(--month-weekend)' : 'var(--surface)';
+    const segs = [];
+    if (worksM) segs.push('var(--shift-i)');
+    if (worksS) segs.push('var(--shift-ii)');
+    if (worksA) segs.push('var(--shift-iii)');
+    let barColor = '';
+    if (segs.length===1) barColor=segs[0];
+    else if (segs.length===2) barColor=`linear-gradient(90deg,${segs[0]} 50%,${segs[1]} 50%)`;
+    else if (segs.length===3) barColor=`linear-gradient(90deg,${segs[0]} 33%,${segs[1]} 33% 67%,${segs[2]} 67%)`;
+    const bar = `<div style="height:3px;border-radius:2px;width:65%;background:${barColor||'transparent'};flex-shrink:0;"></div>`;
+    const dot = pendingReq ? '<div class="cal-dot"></div>' : '';
+    const opacity = isPast&&!isToday ? 'opacity:0.55;' : '';
+    let cls = 'cal-day'; if(isToday) cls+=' today'; else if(isPast) cls+=' past';
+    html += `<div class="${cls}" style="background:${cellBg};${opacity}flex-direction:column;gap:2px;cursor:pointer;" data-iso="${iso}">${d}${bar}${dot}</div>`;
+  }
+  html += '</div>';
+  document.getElementById('month-calendar').innerHTML = html;
+  document.getElementById('month-calendar').addEventListener('click', e => { const c=e.target.closest('[data-iso]'); if(c) openDayDetail(c.dataset.iso); });
+}
+
+function renderOwnerMonthView(y, m, todayIso) {
+  const firstDay = new Date(y,m,1);
+  const startDow = firstDay.getDay()===0 ? 6 : firstDay.getDay()-1;
+  const daysInMonth = new Date(y,m+1,0).getDate();
+  const covCol = n => n===0?'var(--danger)':n===1?'#eab308':'var(--success)';
+  let html = '<div class="calendar-grid">';
+  DAY_LABELS.forEach(l => { html += `<div class="cal-header">${l}</div>`; });
+  for (let i = 0; i < startDow; i++) html += '<div class="cal-day empty"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const iso = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=iso===todayIso, isPast=iso<todayIso;
+    const dow=dayOfWeek(iso), isSun=dow===6, isWeekend=dow>=5;
+    const cellBg=isWeekend?'var(--month-weekend)':'var(--surface)';
+    const opacity=isPast&&!isToday?'opacity:0.55;':'';
+    const cI=STATE.waiters.filter(w=>worksShift(w,iso,'jutro')).length;
+    const cII=isSun?null:STATE.waiters.filter(w=>worksShift(w,iso,'međusmjena')).length;
+    const cIII=isSun?null:STATE.waiters.filter(w=>worksShift(w,iso,'popodne')).length;
+    const seg1=`<div style="flex:1;height:3px;border-radius:1px;background:${covCol(cI)};"></div>`;
+    const seg2=cII!==null?`<div style="flex:1;height:3px;border-radius:1px;background:${covCol(cII)};"></div>`:'';
+    const seg3=cIII!==null?`<div style="flex:1;height:3px;border-radius:1px;background:${covCol(cIII)};"></div>`:'';
+    const bar=`<div style="display:flex;gap:1px;width:80%;flex-shrink:0;">${seg1}${seg2}${seg3}</div>`;
+    let cls='cal-day'; if(isToday) cls+=' today'; else if(isPast) cls+=' past';
+    html+=`<div class="${cls}" style="background:${cellBg};${opacity}flex-direction:column;gap:2px;cursor:pointer;" data-iso="${iso}">${d}${bar}</div>`;
+  }
+  html += '</div>';
+  const legend=`<div style="display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap;">
+    <span style="font-size:11px;color:var(--text-2);display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:10px;height:3px;background:var(--success);border-radius:1px;"></span>≥2 člana</span>
+    <span style="font-size:11px;color:var(--text-2);display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:10px;height:3px;background:#eab308;border-radius:1px;"></span>1 član</span>
+    <span style="font-size:11px;color:var(--text-2);display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:10px;height:3px;background:var(--danger);border-radius:1px;"></span>Nitko</span>
+  </div>`;
+  document.getElementById('month-calendar').innerHTML = html + legend;
+  document.getElementById('month-calendar').addEventListener('click', e => { const c=e.target.closest('[data-iso]'); if(c) openDayDetail(c.dataset.iso); });
+}
+
+// ══════════════════════════════════════════════════════════
+// DAY DETAIL
+// ══════════════════════════════════════════════════════════
+function openDayDetail(iso) {
+  const d = new Date(iso+'T12:00:00');
+  const dow = dayOfWeek(iso);
+  const isSun = dow===6;
+  document.getElementById('day-detail-title').textContent = `${DAY_LABELS_FULL[dow]}, ${d.getDate()}. ${MONTH_NAMES[d.getMonth()]}`;
+  const SHIFTS = [
+    {key:'jutro',num:'I',time:'06:00–14:00',bg:'var(--shift-i-light)',col:'var(--shift-i)'},
+    {key:'međusmjena',num:'II',time:'10:00–18:00',bg:'var(--shift-ii-light)',col:'var(--shift-ii)'},
+    {key:'popodne',num:'III',time:'14:00–22:00',bg:'var(--shift-iii-light)',col:'var(--shift-iii)'},
+  ];
+  let body = '';
+  SHIFTS.forEach(s => {
+    if (isSun && s.key!=='jutro') return;
+    const workers = STATE.waiters.filter(w=>worksShift(w,iso,s.key));
+    const approved = STATE.requests.filter(r=>r.date===iso&&(r.shift===s.key||r.shift==='oboje')&&r.status==='approved').map(r=>r.waiterId);
+    const active = workers.filter(w=>!approved.includes(w.id));
+    const names = active.map(w=>w.name.split(' ')[0]).join(', ')||'—';
+    const pillCol = active.length===0?'var(--danger)':active.length===1?'var(--warn)':'var(--success)';
+    body += `<div class="day-detail-row">
+      <div class="day-detail-badge" style="background:${s.bg};color:${s.col};">${s.num}</div>
+      <div style="flex:1;"><div class="day-detail-names">${names}</div><div class="day-detail-time">${s.time}</div></div>
+      <div class="owner-coverage-pill" style="background:${pillCol};height:20px;padding:0 7px;font-size:10px;">${active.length}</div>
+    </div>`;
+  });
+  document.getElementById('day-detail-body').innerHTML = body;
+  document.getElementById('modal-day-detail').classList.add('open');
+}
+
+// ══════════════════════════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════════════════════════
+function renderAdmin() { renderAdminStaff(); }
+
+function renderAdminStaff() {
+  const list = document.getElementById('admin-staff-list');
+  if (!STATE.waiters.length) {
+    list.innerHTML=`<div class="admin-row"><div class="admin-row-info"><div class="admin-row-sub">Nema članova. Dodaj prvog!</div></div></div>`;
+    return;
+  }
+  list.innerHTML = STATE.waiters.map(w => `
+    <div class="admin-row">
+      <div class="avatar" style="background:${w.color};width:32px;height:32px;font-size:12px;">${initials(w.name)}</div>
+      <div class="admin-row-info">
+        <div class="admin-row-name">${w.name}</div>
+        <div class="admin-row-sub">
+          ${w.phone?w.phone+' · ':''}
+          <span class="join-badge ${w.joined?'active':'pending'}">${w.joined?'Aktivan/na':'Čeka aktivaciju'}</span>
+        </div>
+      </div>
+      <div class="admin-row-actions">
+        <button class="btn-icon" data-wid="${w.id}" data-action="invite" title="Pozivnica">🔗</button>
+        <button class="btn-icon" data-wid="${w.id}" data-action="edit">✏️</button>
+        <button class="btn-icon danger" data-wid="${w.id}" data-action="delete">🗑️</button>
+      </div>
+    </div>`).join('');
+  list.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const wid = btn.dataset.wid, action = btn.dataset.action;
+      if (action==='invite') showInviteForWaiter(wid);
+      if (action==='edit') openWaiterModal(wid);
+      if (action==='delete') deleteWaiter(wid);
+    });
+  });
+}
+
+function showInviteForWaiter(wid) {
+  const w = waiterById(wid);
+  if (!w) return;
+  const url = inviteUrl(w.invite_token);
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay open';
+  const biz = STATE.owner.businessName ? ` u ${STATE.owner.businessName}` : '';
+  const msg = `Pozdrav ${w.name.split(' ')[0]}!\n\nPozvan/a si na ZamijeniMe${biz}.\nOtvori link za postavljanje PIN-a:\n${url}`;
+  const waUrl = `https://wa.me/${w.phone||''}?text=${encodeURIComponent(msg)}`;
+  modal.innerHTML = `<div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Pozivnica za ${w.name.split(' ')[0]}</div>
+    <div class="modal-sub">Pošalji ovaj link radniku. Koristit će ga za postavljanje PIN-a.</div>
+    <div class="invite-link-row" style="margin-bottom:12px;">
+      <span class="invite-link-text">${url}</span>
+      <button class="btn-copy" id="copy-invite-link-btn">Kopiraj</button>
+    </div>
+    <a class="btn-wa" href="${waUrl}" target="_blank" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;border-radius:var(--radius-sm);">💬 Pošalji WhatsApp</a>
+    <button class="btn-secondary" id="close-invite-modal" style="margin-top:8px;">Zatvori</button>
+  </div>`;
+  document.body.appendChild(modal);
+  document.getElementById('copy-invite-link-btn').addEventListener('click', () => {
+    navigator.clipboard.writeText(url).then(() => showToast('Link kopiran ✓')).catch(() => showToast('Kopiraj ručno: '+url));
+  });
+  document.getElementById('close-invite-modal').addEventListener('click', () => document.body.removeChild(modal));
+}
+
+async function deleteWaiter(wid) {
+  const { error } = await sb.from('waiters').delete().eq('id', wid);
+  if (error) { showToast('Greška pri brisanju.'); return; }
+  STATE.waiters = STATE.waiters.filter(w=>w.id!==wid);
+  STATE.requests = STATE.requests.filter(r=>r.waiterId!==wid);
+  showToast('Član uklonjen');
+  renderAdminStaff();
+}
+
+// ══════════════════════════════════════════════════════════
+// WAITER MODAL
+// ══════════════════════════════════════════════════════════
+let editingWaiterId = null;
+let patternState = null;
+let vacationState = [];
+
+function openWaiterModal(wid) {
+  editingWaiterId = wid || null;
+  const w = wid ? waiterById(wid) : null;
+  document.getElementById('waiter-modal-title').textContent = wid ? 'Uredi člana' : 'Dodaj člana';
+  document.getElementById('waiter-name').value = w ? w.name : '';
+  document.getElementById('waiter-phone').value = w ? w.phone : '';
+  patternState = w
+    ? DAY_LABELS.map((_,i) => ({m:!!w.pattern.m[i], s:!!(w.pattern.s||[])[i], a:!!w.pattern.a[i]}))
+    : DAY_LABELS.map(() => ({m:false, s:false, a:false}));
+  vacationState = (w?.vacations||[]).map(v=>({...v}));
+  document.getElementById('waiter-invite-section').style.display = 'none';
+  renderPatternGrid();
+  renderVacationList();
+  document.getElementById('modal-waiter').classList.add('open');
+}
+
+function renderVacationList() {
+  const list = document.getElementById('vacation-list');
+  if (!list) return;
+  if (!vacationState.length) { list.innerHTML='<div style="padding:8px 0;font-size:12px;color:var(--text-3);">Nema planiranih odmora</div>'; return; }
+  list.innerHTML = vacationState.map((v,i) => `
+    <div class="vacation-item">
+      <input class="vac-date-input" type="date" value="${v.from||''}" data-idx="${i}" data-field="from">
+      <span class="vac-sep">–</span>
+      <input class="vac-date-input" type="date" value="${v.to||''}" data-idx="${i}" data-field="to">
+      <button class="vac-remove" data-idx="${i}">✕</button>
+    </div>`).join('');
+  list.querySelectorAll('.vac-date-input').forEach(inp => inp.addEventListener('change', () => { vacationState[inp.dataset.idx][inp.dataset.field]=inp.value; }));
+  list.querySelectorAll('.vac-remove').forEach(btn => btn.addEventListener('click', () => { vacationState.splice(parseInt(btn.dataset.idx),1); renderVacationList(); }));
+}
+
+function closeWaiterModal() {
+  const overlay = document.getElementById('modal-waiter');
+  const modal = overlay.querySelector('.modal');
+  modal.classList.add('closing');
+  setTimeout(() => { modal.classList.remove('closing'); overlay.classList.remove('open'); }, 250);
+}
+
+function renderPatternGrid() {
+  const grid = document.getElementById('pattern-grid');
+  grid.innerHTML = DAY_LABELS.map((label,i) => {
+    const isSun = i===6;
+    return `<div class="pattern-day">
+      <div class="pattern-day-label">${label}</div>
+      <div class="pattern-btn${patternState[i].m?' active-m':''}" data-day="${i}" data-shift="m">J</div>
+      <div class="pattern-btn${patternState[i].s&&!isSun?' active-s':''}${isSun?' disabled':''}" data-day="${i}" data-shift="s" style="${isSun?'opacity:0.3;pointer-events:none;':''}">M</div>
+      <div class="pattern-btn${patternState[i].a&&!isSun?' active-a':''}${isSun?' disabled':''}" data-day="${i}" data-shift="a" style="${isSun?'opacity:0.3;pointer-events:none;':''}">P</div>
+    </div>`;
+  }).join('');
+  grid.querySelectorAll('.pattern-btn:not(.disabled)').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const d=parseInt(btn.dataset.day), s=btn.dataset.shift;
+      patternState[d][s] = !patternState[d][s];
+      renderPatternGrid();
+    });
+  });
+}
+
+async function saveWaiter() {
+  const name = document.getElementById('waiter-name').value.trim();
+  const phone = document.getElementById('waiter-phone').value.trim().replace(/\D/g,'');
+  if (!name) { showToast('Upiši ime'); return; }
+  const pattern = {
+    m: patternState.map(p=>p.m?1:0),
+    s: patternState.map((p,i)=>i===6?0:(p.s?1:0)),
+    a: patternState.map((p,i)=>i===6?0:(p.a?1:0)),
+  };
+  const cleanVacations = vacationState.filter(v=>v.from&&v.to&&v.from<=v.to);
+  const btn = document.getElementById('btn-save-waiter');
+  btn.disabled = true;
+
+  if (editingWaiterId) {
+    const { error } = await sb.from('waiters').update({name, phone, pattern, vacations: cleanVacations}).eq('id', editingWaiterId);
+    if (error) { showToast('Greška pri spremanju.'); btn.disabled=false; return; }
+    const w = waiterById(editingWaiterId);
+    if (w) { w.name=name; w.phone=phone; w.pattern=pattern; w.vacations=cleanVacations; }
+    showToast('Član ažuriran ✓');
+    btn.disabled = false;
+    closeWaiterModal();
+    renderAdminStaff();
+  } else {
+    const color = AVATAR_COLORS[STATE.waiters.length % AVATAR_COLORS.length];
+    const { data, error } = await sb.from('waiters').insert({
+      cafe_id: STATE.cafe.id,
+      name, phone, color, pattern,
+    }).select().single();
+    btn.disabled = false;
+    if (error) { showToast('Greška pri dodavanju.'); return; }
+    const newWaiter = mapWaiter(data);
+    STATE.waiters.push(newWaiter);
+    showToast('Član dodan ✓');
+    // Show invite link
+    const url = inviteUrl(newWaiter.invite_token);
+    document.getElementById('waiter-invite-link-text').textContent = url;
+    const biz = STATE.owner.businessName ? ` u ${STATE.owner.businessName}` : '';
+    const msg = `Pozdrav ${name.split(' ')[0]}!\n\nPozvan/a si na ZamijeniMe${biz}.\nOtvori link za postavljanje PIN-a:\n${url}`;
+    const waUrl = `https://wa.me/${phone||''}?text=${encodeURIComponent(msg)}`;
+    document.getElementById('btn-wa-invite').href = waUrl;
+    document.getElementById('btn-copy-invite').onclick = () => {
+      navigator.clipboard.writeText(url).then(() => showToast('Link kopiran ✓')).catch(() => showToast('Kopiraj: '+url));
+    };
+    document.getElementById('waiter-invite-section').style.display = 'block';
+    document.getElementById('btn-save-waiter').style.display = 'none';
+    document.getElementById('btn-cancel-waiter').textContent = 'Zatvori';
+    renderAdminStaff();
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// OWNER PROFILE MODAL
+// ══════════════════════════════════════════════════════════
+function openOwnerProfileModal() {
+  document.getElementById('owner-name-input').value = STATE.owner.name;
+  document.getElementById('owner-phone-input').value = STATE.owner.phone;
+  document.getElementById('owner-business-input').value = STATE.owner.businessName;
+  document.getElementById('modal-owner-profile').classList.add('open');
+}
+function closeOwnerProfileModal() { document.getElementById('modal-owner-profile').classList.remove('open'); }
+async function saveOwnerProfile() {
+  const name = document.getElementById('owner-name-input').value.trim();
+  const phone = document.getElementById('owner-phone-input').value.trim().replace(/\D/g,'');
+  const businessName = document.getElementById('owner-business-input').value.trim();
+  if (!name) { showToast('Upiši ime'); return; }
+  const btn = document.getElementById('btn-save-owner-profile');
+  btn.disabled = true;
+  const { data: { user } } = await sb.auth.getUser();
+  await sb.auth.updateUser({ data: { display_name: name, phone } });
+  if (businessName) await sb.from('cafes').update({ name: businessName }).eq('id', STATE.cafe.id);
+  STATE.owner = {name, phone, businessName: businessName||STATE.owner.businessName};
+  if (STATE.cafe) STATE.cafe.name = businessName;
+  document.getElementById('home-greeting').textContent = name;
+  btn.disabled = false;
+  closeOwnerProfileModal();
+  showToast('Profil vlasnika spremljen ✓');
+}
+
+// ══════════════════════════════════════════════════════════
+// SHIFTMAKER
+// ══════════════════════════════════════════════════════════
+let smShifts = {jutro:{enabled:true,min:2},međusmjena:{enabled:true,min:2},popodne:{enabled:true,min:2}};
+let smSundayDefault = 'morning';
+let smSundayOverrides = {};
+let smWeeks = 4;
+let smMode = 'weeks';
+let smMonthOffset = 1;
+let smDays = {};
+let smPrefs = {};
+
+function smSyncMonthLabel() {
+  const now = todayDate();
+  const t = new Date(now.getFullYear(), now.getMonth()+smMonthOffset, 1);
+  document.getElementById('sm-month-val').textContent = `${MONTH_NAMES[t.getMonth()]} ${t.getFullYear()}`;
+}
+function smSyncModeUI() {
+  document.querySelectorAll('.sm-mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.smmode===smMode));
+  document.getElementById('sm-weeks-row').style.display = smMode==='weeks'?'flex':'none';
+  document.getElementById('sm-month-row').style.display = smMode==='month'?'flex':'none';
+}
+function smSundaySummaryText() {
+  const modes = Object.values(smSundayOverrides);
+  if (!modes.length) return smSundayDefault==='closed'?'Sve nedjelje zatvorene':smSundayDefault==='morning'?'Sve nedjelje — samo jutro':'Sve nedjelje — cijeli dan';
+  const labels = {closed:'Zatvoreno',morning:'samo jutro',full:'cijeli dan'};
+  const counts = {};
+  modes.forEach(m=>{counts[m]=(counts[m]||0)+1;});
+  return Object.entries(counts).map(([k,v])=>`${v}× ${labels[k]}`).join(', ')+' (iznimke)';
+}
+function smGetSundayRange() {
+  const now = todayDate();
+  let startDate, endDate;
+  if (smMode==='month') { startDate=new Date(now.getFullYear(),now.getMonth()+smMonthOffset,1); endDate=new Date(startDate.getFullYear(),startDate.getMonth()+1,0); }
+  else { startDate=getMonday(addDays(now,7)); endDate=addDays(startDate,smWeeks*7-1); }
+  const sundays = [];
+  let d = new Date(startDate);
+  while (d<=endDate) { if(d.getDay()===0) sundays.push(new Date(d)); d=addDays(d,1); }
+  return sundays;
+}
+function openSundaySettingsModal() {
+  const sundays = smGetSundayRange();
+  document.querySelectorAll('#sm-sunday-default-sel .sm-sunday-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===smSundayDefault));
+  const list = document.getElementById('sunday-list');
+  if (!sundays.length) { list.innerHTML='<div style="padding:12px 0;font-size:13px;color:var(--text-3);">Nema nedjelja u odabranom periodu.</div>'; }
+  else {
+    list.innerHTML = sundays.map(d => {
+      const iso = isoDate(d);
+      const cur = smSundayOverrides[iso]||null;
+      const label = `${d.getDate()}. ${MONTH_NAMES[d.getMonth()]}`;
+      return `<div class="sunday-item"><span class="sunday-item-date">${label}</span>
+        <div class="sunday-item-sel">
+          <button class="sunday-item-btn${cur==='closed'?' active':''}" data-iso="${iso}" data-mode="closed">Zatvoreno</button>
+          <button class="sunday-item-btn${(!cur||cur==='morning')?' active':''}" data-iso="${iso}" data-mode="morning">Samo I</button>
+          <button class="sunday-item-btn${cur==='full'?' active':''}" data-iso="${iso}" data-mode="full">Sve</button>
+        </div></div>`;
+    }).join('');
+    list.querySelectorAll('.sunday-item-btn').forEach(btn => {
+      btn.addEventListener('pointerdown', () => {
+        smSundayOverrides[btn.dataset.iso] = btn.dataset.mode;
+        btn.closest('.sunday-item').querySelectorAll('.sunday-item-btn').forEach(b=>b.classList.toggle('active',b===btn));
+      });
+    });
+  }
+  document.getElementById('modal-sunday-settings').classList.add('open');
+}
+function openShiftmakerModal() {
+  smShifts={jutro:{enabled:true,min:2},međusmjena:{enabled:true,min:2},popodne:{enabled:true,min:2}};
+  smSundayDefault='morning'; smSundayOverrides={}; smWeeks=4; smMode='weeks'; smMonthOffset=1; smDays={}; smPrefs={};
+  STATE.waiters.forEach(w=>{smDays[w.id]=6;smPrefs[w.id]='auto';});
+  ['jutro','međusmjena','popodne'].forEach(s=>{
+    document.getElementById(`sm-min-${s}`).textContent=smShifts[s].min;
+    const chk=document.querySelector(`.sm-shift-check[data-shift="${s}"]`); if(chk) chk.checked=true;
+    document.getElementById(`sm-row-${s}`).classList.remove('sm-disabled');
+  });
+  document.getElementById('sm-weeks-val').textContent=smWeeks;
+  document.getElementById('sm-sunday-summary').textContent=smSundaySummaryText();
+  smSyncModeUI(); smSyncMonthLabel();
+  document.getElementById('sm-notify-section').style.display='none';
+  renderSmWaiterList();
+  document.getElementById('modal-shiftmaker').classList.add('open');
+}
+function renderSmWaiterList() {
+  const list = document.getElementById('sm-waiter-list');
+  list.innerHTML = STATE.waiters.map(w=>`
+    <div class="sm-row">
+      <div class="sm-avatar" style="background:${w.color};">${initials(w.name)}</div>
+      <div class="sm-name">${w.name.split(' ')[0]}</div>
+      <div class="sm-stepper">
+        <button class="sm-stepper-btn" data-wid="${w.id}" data-dir="-1">−</button>
+        <span class="sm-stepper-val" id="sm-days-${w.id}">${smDays[w.id]}</span>
+        <button class="sm-stepper-btn" data-wid="${w.id}" data-dir="1">+</button>
+        <span class="sm-label">d/tjed</span>
+      </div>
+      <div class="sm-pref" id="sm-pref-${w.id}">
+        ${['auto','jutro','međusmjena','popodne'].map(p=>`<button class="sm-pref-btn${smPrefs[w.id]===p?' active':''}" data-wid="${w.id}" data-pref="${p}">${p==='auto'?'Auto':p==='jutro'?'I':p==='međusmjena'?'II':'III'}</button>`).join('')}
+      </div>
+    </div>`).join('');
+  list.querySelectorAll('.sm-stepper-btn[data-wid]').forEach(btn=>{
+    btn.addEventListener('pointerdown',()=>{const wid=btn.dataset.wid,dir=parseInt(btn.dataset.dir);smDays[wid]=Math.max(0,Math.min(7,(smDays[wid]||0)+dir));document.getElementById(`sm-days-${wid}`).textContent=smDays[wid];});
+  });
+  list.querySelectorAll('.sm-pref-btn').forEach(btn=>{
+    btn.addEventListener('pointerdown',()=>{const wid=btn.dataset.wid;smPrefs[wid]=btn.dataset.pref;document.getElementById(`sm-pref-${wid}`).querySelectorAll('.sm-pref-btn').forEach(b=>b.classList.toggle('active',b.dataset.pref===btn.dataset.pref));});
+  });
+}
+function closeShiftmakerModal() {
+  const overlay=document.getElementById('modal-shiftmaker');
+  overlay.querySelector('.modal').classList.add('closing');
+  setTimeout(()=>{overlay.querySelector('.modal').classList.remove('closing');overlay.classList.remove('open');},250);
+}
+function assignShiftsForDay(workers, shiftsThisDay, waiterPref) {
+  const assigned={};
+  if (!workers.length) return assigned;
+  if (shiftsThisDay.length===1) { workers.forEach(w=>{assigned[w.id]=shiftsThisDay[0];}); return assigned; }
+  workers.forEach(w=>{const pref=waiterPref[w.id];assigned[w.id]=shiftsThisDay.includes(pref)?pref:shiftsThisDay[0];});
+  const countOf=s=>Object.values(assigned).filter(x=>x===s).length;
+  for (const needyShift of shiftsThisDay) {
+    const min=smShifts[needyShift].min;
+    if (countOf(needyShift)>=min) continue;
+    for (const donorShift of shiftsThisDay) {
+      if (donorShift===needyShift) continue;
+      while (countOf(needyShift)<min) {
+        if (countOf(donorShift)<=smShifts[donorShift].min) break;
+        const donor=workers.find(w=>assigned[w.id]===donorShift);
+        if (!donor) break;
+        assigned[donor.id]=needyShift;
+      }
+      if (countOf(needyShift)>=min) break;
+    }
+  }
+  return assigned;
+}
+
+async function generateSchedule() {
+  const enabledShifts = ['jutro','međusmjena','popodne'].filter(s=>smShifts[s].enabled);
+  const now = todayDate();
+  let startDate, endDate;
+  if (smMode==='month') { startDate=new Date(now.getFullYear(),now.getMonth()+smMonthOffset,1); endDate=new Date(startDate.getFullYear(),startDate.getMonth()+1,0); }
+  else { startDate=getMonday(addDays(now,7)); endDate=addDays(startDate,smWeeks*7-1); }
+
+  const waiterPref={};
+  STATE.waiters.forEach(w=>{
+    let pref=smPrefs[w.id];
+    if (pref==='auto'||!enabledShifts.includes(pref)) {
+      const mC=[0,1,2,3,4,5,6].filter(d=>w.pattern.m[d]).length;
+      const sC=[0,1,2,3,4,5,6].filter(d=>(w.pattern.s||[])[d]).length;
+      const aC=[0,1,2,3,4,5,6].filter(d=>w.pattern.a[d]).length;
+      pref=enabledShifts[0]||'jutro';
+      if (enabledShifts.includes('međusmjena')&&sC>=mC&&sC>=aC) pref='međusmjena';
+      else if (enabledShifts.includes('popodne')&&aC>=mC) pref='popodne';
+    }
+    waiterPref[w.id]=pref;
+  });
+
+  const generated={};
+  let weekStart=getMonday(startDate);
+  while (weekStart<=endDate) {
+    const weekAssignments={};
+    STATE.waiters.forEach(w=>{
+      const days=smDays[w.id]||0;
+      const available=[0,1,2,3,4,5].filter(dow2=>{const dd=addDays(weekStart,dow2);return !isOnVacation(w,isoDate(dd));}).sort(()=>Math.random()-0.5);
+      const assigned=new Set(available.slice(0,Math.min(days,available.length)));
+      const sunIso=isoDate(addDays(weekStart,6));
+      if ((smSundayOverrides[sunIso]||smSundayDefault)!=='closed'&&days>6&&!isOnVacation(w,sunIso)) assigned.add(6);
+      weekAssignments[w.id]=assigned;
+    });
+    for (let dow=0;dow<7;dow++) {
+      const d=addDays(weekStart,dow);
+      if (d<startDate||d>endDate) continue;
+      const iso2=isoDate(d);
+      const isSun=dow===6;
+      const sundayMode=smSundayOverrides[iso2]||smSundayDefault;
+      if (isSun&&sundayMode==='closed') continue;
+      const shiftsThisDay=isSun&&sundayMode==='morning'?['jutro']:enabledShifts;
+      let workers=STATE.waiters.filter(w=>weekAssignments[w.id].has(dow));
+      const minNeeded=shiftsThisDay.reduce((s,sh)=>s+smShifts[sh].min,0);
+      if (workers.length<minNeeded) {
+        const extras=STATE.waiters.filter(w=>!weekAssignments[w.id].has(dow)).slice(0,minNeeded-workers.length);
+        extras.forEach(w=>{weekAssignments[w.id].add(dow);});
+        workers=STATE.waiters.filter(w=>weekAssignments[w.id].has(dow));
+      }
+      const shiftAssigned=assignShiftsForDay(workers,shiftsThisDay,waiterPref);
+      if (!generated[iso2]) generated[iso2]={};
+      STATE.waiters.forEach(w=>{generated[iso2][w.id]=shiftAssigned[w.id]?[shiftAssigned[w.id]]:[];});
+    }
+    weekStart=addDays(weekStart,7);
+  }
+
+  // Batch upsert to date_schedules
+  const btn = document.getElementById('btn-generate-schedule');
+  btn.disabled = true;
+  btn.textContent = 'Spreavam...';
+  const records = [];
+  Object.entries(generated).forEach(([date, byWaiter]) => {
+    Object.entries(byWaiter).forEach(([waiter_id, shifts]) => {
+      records.push({cafe_id: STATE.cafe.id, waiter_id, date, shifts});
+    });
+  });
+  const { error } = await sb.from('date_schedules').upsert(records, {onConflict: 'cafe_id,waiter_id,date'});
+  btn.disabled = false;
+  btn.textContent = '⚡ Generiraj raspored';
+  if (error) { showToast('Greška pri spremanju rasporeda.'); return; }
+  Object.assign(STATE.dateSchedule, generated);
+  showToast('Raspored generiran ✓');
+
+  // Notify buttons
+  const notifySection = document.getElementById('sm-notify-section');
+  const notifyList = document.getElementById('sm-notify-list');
+  if (notifySection && notifyList) {
+    const rangeLabel = `${startDate.getDate()}.${startDate.getMonth()+1}. – ${endDate.getDate()}.${endDate.getMonth()+1}.`;
+    notifyList.innerHTML = STATE.waiters.map(w=>{
+      const biz = STATE.owner.businessName ? ` (${STATE.owner.businessName})` : '';
+      const msg = `Zdravo ${w.name.split(' ')[0]}! Tvoj raspored${biz} za ${rangeLabel} je spreman. Provjeri u aplikaciji.`;
+      return `<button class="btn-whatsapp" data-msg="${encodeURIComponent(msg)}" data-phone="${w.phone||''}">💬 Obavijesti ${w.name.split(' ')[0]}</button>`;
+    }).join('');
+    notifyList.querySelectorAll('.btn-whatsapp').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const base=btn.dataset.phone?`https://wa.me/${btn.dataset.phone}`:'https://wa.me/';
+        window.open(`${base}?text=${btn.dataset.msg}`,'_blank');
+      });
+    });
+    notifySection.style.display='block';
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// SWIPE TO SWITCH TABS
+// ══════════════════════════════════════════════════════════
+let touchStartX = 0;
+function setupSwipe() {
+  const slider = document.getElementById('tab-slider');
+  slider.addEventListener('touchstart', e=>{touchStartX=e.touches[0].clientX;},{passive:true});
+  slider.addEventListener('touchend', e=>{
+    const diff=touchStartX-e.changedTouches[0].clientX;
+    if (Math.abs(diff)<60) return;
+    const order=getVisibleTabOrder();
+    const idx=order.indexOf(STATE.activeTab);
+    if (diff>0&&idx<order.length-1) switchTab(order[idx+1],'left');
+    if (diff<0&&idx>0) switchTab(order[idx-1],'right');
+  },{passive:true});
+}
+
+// ══════════════════════════════════════════════════════════
+// EVENT LISTENERS
+// ══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  // Login screen
+  document.getElementById('btn-go-owner-auth').addEventListener('click', () => {
+    setupOwnerAuthScreen();
+    showScreen('screen-owner-auth');
+  });
+
+  // Owner auth
+  document.getElementById('btn-auth-submit').addEventListener('click', handleAuthSubmit);
+  document.getElementById('auth-email').addEventListener('keydown', e=>{if(e.key==='Enter') document.getElementById('auth-password').focus();});
+  document.getElementById('auth-password').addEventListener('keydown', e=>{if(e.key==='Enter') handleAuthSubmit();});
+  document.getElementById('btn-auth-toggle').addEventListener('click', () => {
+    _authMode = _authMode==='login'?'register':'login';
+    document.getElementById('auth-title').textContent = _authMode==='login'?'Prijava vlasnika':'Registracija vlasnika';
+    document.getElementById('auth-toggle-text').textContent = _authMode==='login'?'Nemaš račun?':'Već imaš račun?';
+    document.getElementById('btn-auth-toggle').textContent = _authMode==='login'?'Registriraj se':'Prijavi se';
+    document.getElementById('btn-auth-submit').textContent = _authMode==='login'?'Prijavi se':'Registriraj se';
+    document.getElementById('auth-error').textContent='';
+  });
+  document.getElementById('btn-back-to-login').addEventListener('click', () => {
+    const ws=getWaiterSession();
+    showScreen('screen-login');
+    if (ws) setupWaiterLoginScreen(ws);
+    else setupLoginNoSession();
+  });
+
+  // Cafe setup
+  document.getElementById('btn-setup-save').addEventListener('click', handleCafeSetup);
+
+  // Logout buttons
+  ['logout-btn','logout-btn-swaps','logout-btn-week','logout-btn-month','logout-btn-admin','admin-logout']
+    .forEach(id=>{const el=document.getElementById(id);if(el) el.addEventListener('click',logout);});
+
+  // Theme toggles
+  ['theme-toggle-btn','theme-toggle-btn-2','theme-toggle-btn-3','theme-toggle-btn-4','theme-toggle-btn-5']
+    .forEach(id=>{const el=document.getElementById(id);if(el) el.addEventListener('click',toggleTheme);});
+
+  // Tab bar
+  document.querySelectorAll('.tab-btn[data-tab]').forEach(btn=>{
+    btn.addEventListener('click', ()=>switchTab(btn.dataset.tab));
+  });
+
+  // Week nav
+  document.getElementById('week-prev').addEventListener('click', ()=>{STATE.weekOffset--;renderWeekView();});
+  document.getElementById('week-next').addEventListener('click', ()=>{STATE.weekOffset++;renderWeekView();});
+
+  // Month nav
+  document.getElementById('month-prev').addEventListener('click', ()=>{monthViewDate=new Date(monthViewDate.getFullYear(),monthViewDate.getMonth()-1,1);renderMonthView();});
+  document.getElementById('month-next').addEventListener('click', ()=>{monthViewDate=new Date(monthViewDate.getFullYear(),monthViewDate.getMonth()+1,1);renderMonthView();});
+
+  // Request modal
+  document.getElementById('btn-request-off').addEventListener('click', openRequestModal);
+  document.getElementById('btn-submit-request').addEventListener('click', submitRequest);
+  document.getElementById('btn-cancel-request').addEventListener('click', closeRequestModal);
+  document.getElementById('req-cal-prev').addEventListener('click', ()=>{reqCalDate=new Date(reqCalDate.getFullYear(),reqCalDate.getMonth()-1,1);renderReqCalendar();});
+  document.getElementById('req-cal-next').addEventListener('click', ()=>{reqCalDate=new Date(reqCalDate.getFullYear(),reqCalDate.getMonth()+1,1);renderReqCalendar();});
+  document.getElementById('req-shift-picker').querySelectorAll('.shift-option').forEach(opt=>{
+    opt.addEventListener('click',()=>{reqSelectedShift=opt.dataset.shift;renderShiftPicker();});
+  });
+
+  // Swaps filter
+  document.getElementById('swaps-filter-tabs').querySelectorAll('.filter-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{
+      swapFilter=tab.dataset.filter;
+      document.querySelectorAll('.filter-tab').forEach(t=>t.classList.toggle('active',t===tab));
+      renderSwaps();
+    });
+  });
+
+  // Day detail
+  document.getElementById('btn-close-day-detail').addEventListener('click', ()=>document.getElementById('modal-day-detail').classList.remove('open'));
+
+  // Admin
+  document.getElementById('btn-add-waiter').addEventListener('click', ()=>openWaiterModal(null));
+  document.getElementById('btn-save-waiter').addEventListener('click', saveWaiter);
+  document.getElementById('btn-cancel-waiter').addEventListener('click', ()=>{
+    closeWaiterModal();
+    document.getElementById('btn-save-waiter').style.display='flex';
+    document.getElementById('btn-cancel-waiter').textContent='Odustani';
+    document.getElementById('waiter-invite-section').style.display='none';
+  });
+  document.getElementById('btn-add-vacation').addEventListener('click', ()=>{vacationState.push({from:'',to:''});renderVacationList();});
+  document.getElementById('btn-shiftmaker').addEventListener('click', openShiftmakerModal);
+  document.getElementById('btn-owner-profile').addEventListener('click', openOwnerProfileModal);
+
+  // Shiftmaker
+  document.getElementById('btn-generate-schedule').addEventListener('click', generateSchedule);
+  document.getElementById('btn-cancel-shiftmaker').addEventListener('click', closeShiftmakerModal);
+  document.getElementById('sm-weeks-dec').addEventListener('click', ()=>{smWeeks=Math.max(1,smWeeks-1);document.getElementById('sm-weeks-val').textContent=smWeeks;});
+  document.getElementById('sm-weeks-inc').addEventListener('click', ()=>{smWeeks=Math.min(12,smWeeks+1);document.getElementById('sm-weeks-val').textContent=smWeeks;});
+  document.getElementById('sm-month-dec').addEventListener('click', ()=>{smMonthOffset=Math.max(1,smMonthOffset-1);smSyncMonthLabel();});
+  document.getElementById('sm-month-inc').addEventListener('click', ()=>{smMonthOffset=Math.min(6,smMonthOffset+1);smSyncMonthLabel();});
+  document.querySelectorAll('.sm-mode-btn').forEach(b=>b.addEventListener('click',()=>{smMode=b.dataset.smmode;smSyncModeUI();}));
+  document.querySelectorAll('.sm-shift-check').forEach(chk=>{
+    chk.addEventListener('change',()=>{
+      const s=chk.dataset.shift;
+      smShifts[s].enabled=chk.checked;
+      document.getElementById(`sm-row-${s}`).classList.toggle('sm-disabled',!chk.checked);
+    });
+  });
+  document.querySelectorAll('.sm-shift-dec,.sm-shift-inc').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const s=btn.dataset.shift, delta=btn.classList.contains('sm-shift-inc')?1:-1;
+      smShifts[s].min=Math.max(1,Math.min(8,(smShifts[s].min||2)+delta));
+      document.getElementById(`sm-min-${s}`).textContent=smShifts[s].min;
+    });
+  });
+  document.getElementById('btn-open-sunday-settings').addEventListener('click', openSundaySettingsModal);
+  document.getElementById('btn-sunday-done').addEventListener('click', ()=>{
+    document.getElementById('sm-sunday-summary').textContent=smSundaySummaryText();
+    document.getElementById('modal-sunday-settings').classList.remove('open');
+  });
+  document.querySelectorAll('#sm-sunday-default-sel .sm-sunday-btn').forEach(b=>{
+    b.addEventListener('pointerdown',()=>{
+      smSundayDefault=b.dataset.mode;
+      document.querySelectorAll('#sm-sunday-default-sel .sm-sunday-btn').forEach(x=>x.classList.toggle('active',x===b));
+    });
+  });
+
+  // Owner profile
+  document.getElementById('btn-save-owner-profile').addEventListener('click', saveOwnerProfile);
+  document.getElementById('btn-cancel-owner-profile').addEventListener('click', closeOwnerProfileModal);
+
+  // Onboarding
+  document.getElementById('ob-next').addEventListener('click', ()=>{
+    obStep++;
+    if (obStep>=ONBOARDING_STEPS.length) { closeOnboarding(); return; }
+    renderObStep();
+  });
+  document.getElementById('ob-skip').addEventListener('click', closeOnboarding);
+
+  // Close modals on overlay click
+  ['modal-request','modal-day-detail','modal-owner-profile','modal-sunday-settings'].forEach(id=>{
+    const overlay=document.getElementById(id);
+    if (!overlay) return;
+    overlay.addEventListener('click', e=>{if(e.target===overlay) overlay.classList.remove('open');});
+  });
+
+  setupSwipe();
+
+  // Supabase auth listener (handles token refresh)
+  sb.auth.onAuthStateChange((event, session) => {
+    if (event==='SIGNED_OUT' && STATE.currentUser==='owner') {
+      logout();
+    }
+  });
+
+  await init();
+});
+</script>
+</body>
+</html>
