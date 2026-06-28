@@ -1,4 +1,4 @@
-const CACHE = 'zm-v1';
+const CACHE = 'zm-v2';
 const ASSETS = [
   './zamijeni_me.html',
   './manifest.json',
