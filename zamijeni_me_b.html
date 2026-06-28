@@ -2312,7 +2312,7 @@ function showInviteForWaiter(wid) {
   const modal = document.createElement('div');
   modal.className = 'modal-overlay open';
   const biz = STATE.owner.businessName ? ` u ${STATE.owner.businessName}` : '';
-  const msg = `Pozdrav ${w.name.split(' ')[0]}!\n\nPozvan/a si na ZamijeniMe${biz}.\n\n👇 POSTAVLJANJE PIN-a (pritisni link):\n${url}`;
+  const msg = `Ej ${w.name.split(' ')[0]}! 👋\n\nPozvan/a si u tim kafića${biz}.\nKoristimo ZamijeniMe za rasporede i zamjene smjena — da ne moraš zvati šefa u 6 ujutro. 🙏\n\n👇 Klikni i postavi svoj PIN (30 sekundi):\n${url}\n\n(PIN znaš samo ti, čak ni šef ne vidi. 😄)\nVidimo se u rasporedu! ☕`;
   const waUrl = `https://wa.me/${w.phone||''}?text=${encodeURIComponent(msg)}`;
   modal.innerHTML = `<div class="modal">
     <div class="modal-handle"></div>
@@ -2443,7 +2443,7 @@ async function saveWaiter() {
     const url = inviteUrl(newWaiter.invite_token);
     document.getElementById('waiter-invite-link-text').textContent = url;
     const biz = STATE.owner.businessName ? ` u ${STATE.owner.businessName}` : '';
-    const msg = `Pozdrav ${name.split(' ')[0]}!\n\nPozvan/a si na ZamijeniMe${biz}.\n\n👇 POSTAVLJANJE PIN-a (pritisni link):\n${url}`;
+    const msg = `Ej ${name.split(' ')[0]}! 👋\n\nPozvan/a si u tim kafića${biz}.\nKoristimo ZamijeniMe za rasporede i zamjene smjena — da ne moraš zvati šefa u 6 ujutro. 🙏\n\n👇 Klikni i postavi svoj PIN (30 sekundi):\n${url}\n\n(PIN znaš samo ti, čak ni šef ne vidi. 😄)\nVidimo se u rasporedu! ☕`;
     const waUrl = `https://wa.me/${phone||''}?text=${encodeURIComponent(msg)}`;
     document.getElementById('btn-wa-invite').href = waUrl;
     document.getElementById('btn-copy-invite').onclick = () => {
