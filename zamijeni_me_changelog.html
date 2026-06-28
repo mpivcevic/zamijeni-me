@@ -867,6 +867,28 @@
       body: "updateBadges() and renderOwnerHome() both filtered only status='pending_approval' (waiter covered, owner must approve). Fresh waiter requests arrive as status='open' and were completely invisible to the owner — no badge, no card. Fixed both to include open+pending_approval. Home card label now adapts: '1 novi zahtjev', '2 nova, 1 čeka odobrenje', or 'X zahtjeva čeka odobrenje' depending on the mix.",
       why: "Owner had no way to know a waiter submitted a request until someone else volunteered to cover it — defeating the entire notification purpose.",
       date: "28 Jun 2026"
+    },
+    {
+      id: "build-4-9-manifest-b",
+      phase: "build",
+      version: "Build 4.9",
+      versionDate: "28 Jun 2026",
+      tag: "fix",
+      title: "manifest_b.json — Phase B PWA installs correct file",
+      body: "Created manifest_b.json with start_url pointing to zamijeni_me_b.html. Updated zamijeni_me_b.html to reference manifest_b.json instead of manifest.json. Previously, any PWA install from Phase B launched Phase A (zamijeni_me.html) because the shared manifest had the wrong start_url.",
+      why: "PWA shortcuts installed from Phase B opened the old Phase A file, making home screen testing impossible.",
+      date: "28 Jun 2026"
+    },
+    {
+      id: "build-4-10-returning-waiter-login",
+      phase: "build",
+      version: "Build 4.10",
+      versionDate: "28 Jun 2026",
+      tag: "feature",
+      title: "Returning waiter login — phone number + PIN",
+      body: "Added 'Već imam PIN → Prijavi se' link to the login screen's no-session state. Tapping it reveals a phone number input. On submit, the app queries Supabase waiters table by phone number, finds the waiter record, and hands it to the existing PIN keypad. PIN verification uses the same verify_waiter_pin RPC as the normal login. Previously, waiters who cleared their browser data or installed the PWA fresh had no way to log back in — the only path was the one-time invite link.",
+      why: "Clearing browser data or fresh PWA install wiped the waiter session with no recovery path. Critical missing feature discovered during two-browser testing setup.",
+      date: "28 Jun 2026"
     }
   ];
   </script>
