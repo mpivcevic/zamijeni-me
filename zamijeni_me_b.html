@@ -1955,8 +1955,15 @@ async function submitRequest() {
   STATE.requests.push(mapRequest(data));
 
   // Build WhatsApp message
+  const shiftAcc = s => s === 'jutro' ? 'jutarnju smjenu' : s === 'međusmjena' ? 'međusmjenu' : 'popodnevnu smjenu';
   let msg = `[ZamijeniMe]\n\n${w.name} traži slobodan dan ${formatDate(reqSelectedDate)}.`;
-  if (canArr.length > 0) msg += `\nMože zamijeniti za: ${canArr.map(shiftName).join(' ili ')}.`;
+  if (canArr.length > 0) {
+    if (myShifts.length === 1) {
+      msg += `\nMože zamijeniti ${shiftAcc(myShifts[0])} za ${canArr.map(shiftAcc).join(' ili ')}.`;
+    } else {
+      msg += `\nMože pokriti: ${canArr.map(shiftAcc).join(' ili ')}.`;
+    }
+  }
   if (note) msg += `\nNapomena: ${note}`;
   const waUrl = `https://wa.me/${STATE.owner.phone||''}?text=${encodeURIComponent(msg)}`;
   document.getElementById('req-notify-bar').innerHTML = `
