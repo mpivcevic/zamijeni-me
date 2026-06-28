@@ -573,10 +573,16 @@ details[open] .hours-chevron::before{content:'▴';}
     <div class="login-error" id="login-error"></div>
   </div>
   <!-- no session: welcome for new waiter -->
-  <div id="login-no-session-section" style="display:none;flex-direction:column;align-items:center;">
+  <div id="login-no-session-section" style="display:none;flex-direction:column;align-items:center;width:100%;">
     <div class="login-no-session">
       <p>Nisi još aktiviran/a.<br>Zatraži pozivnicu od vlasnika kafića.</p>
     </div>
+    <div id="login-phone-section" style="display:none;flex-direction:column;align-items:center;width:100%;gap:10px;margin-top:8px;">
+      <input id="returning-phone" type="tel" class="form-input" placeholder="Tvoj broj mobitela" style="width:100%;text-align:center;"/>
+      <button class="btn-primary" id="btn-phone-lookup" style="width:100%;">Dalje →</button>
+      <div id="returning-error" style="color:var(--danger);font-size:13px;min-height:18px;text-align:center;"></div>
+    </div>
+    <button id="btn-returning-waiter" style="margin-top:20px;background:none;border:none;color:var(--accent);font-size:14px;cursor:pointer;padding:8px;">Već imam PIN → Prijavi se</button>
   </div>
   <!-- owner link always shown at bottom -->
   <div class="login-owner-link">
@@ -2761,6 +2767,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-go-owner-auth').addEventListener('click', () => {
     setupOwnerAuthScreen();
     showScreen('screen-owner-auth');
+  });
+
+  document.getElementById('btn-returning-waiter').addEventListener('click', () => {
+    document.getElementById('login-phone-section').style.display = 'flex';
+    document.getElementById('btn-returning-waiter').style.display = 'none';
+    document.getElementById('returning-phone').focus();
+  });
+
+  document.getElementById('btn-phone-lookup').addEventListener('click', async () => {
+    const phone = document.getElementById('returning-phone').value.trim().replace(/\s+/g, '');
+    const errEl = document.getElementById('returning-error');
+    errEl.textContent = '';
+    if (!phone) { errEl.textContent = 'Upiši broj mobitela.'; return; }
+    const btn = document.getElementById('btn-phone-lookup');
+    btn.disabled = true; btn.textContent = '...';
+    const { data: waiter } = await sb.from('waiters').select('*').eq('phone', phone).maybeSingle();
+    btn.disabled = false; btn.textContent = 'Dalje →';
+    if (!waiter) { errEl.textContent = 'Broj nije pronađen. Provjeri s vlasnikom.'; return; }
+    _loginWaiterSession = { id: waiter.id, name: waiter.name, cafe_id: waiter.cafe_id, color: waiter.color };
+    setupWaiterLoginScreen(_loginWaiterSession);
+  });
+
+  document.getElementById('returning-phone').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('btn-phone-lookup').click();
   });
 
   // Owner auth
