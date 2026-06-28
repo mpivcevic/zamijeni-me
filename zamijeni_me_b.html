@@ -2877,6 +2877,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   await init();
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
 });
 </script>
 </body>
