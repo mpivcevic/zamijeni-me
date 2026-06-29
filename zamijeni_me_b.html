@@ -1555,6 +1555,7 @@ async function handleInviteKey(k) {
     });
     _inviteVerifying = false;
     if (ok) {
+      localStorage.setItem('zm_b_cafe_id', _inviteWaiter.cafe_id);
       const session = {id: _inviteWaiter.id, name: _inviteWaiter.name, cafe_id: _inviteWaiter.cafe_id, color: _inviteWaiter.color || AVATAR_COLORS[0]};
       setWaiterSession(session);
       history.replaceState({}, '', location.pathname);
