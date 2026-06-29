@@ -545,7 +545,7 @@ details[open] .hours-chevron::before{content:'▴';}
 <div id="screen-login" class="screen">
   <div class="login-logo">Zamijeni<span>Me</span></div>
   <p class="login-tagline">Tvoje smjene, tvoja pravila.</p>
-  <p style="font-size:10px;color:var(--text-3);margin-top:-24px;margin-bottom:clamp(14px,2.5dvh,24px);">v4.15</p>
+  <p style="font-size:10px;color:var(--text-3);margin-top:-24px;margin-bottom:clamp(14px,2.5dvh,24px);">v4.16</p>
   <!-- waiter session: show name + PIN keypad -->
   <div id="login-waiter-section" style="display:none;width:100%;flex-direction:column;align-items:center;">
     <div class="login-name-display">
@@ -2120,7 +2120,9 @@ function renderSwaps() {
     if (r.status==='pending_approval') statusChip=`<span class="detail-chip chip-covered">⏳ Na odobrenju (${coverer?.name})</span>`;
     else if (r.status==='approved') statusChip=`<span class="detail-chip chip-covered">✓ Odobreno (${coverer?.name})</span>`;
     let actionBtn = '';
-    if (!isMine && r.status==='open' && !isOwner()) {
+    if (isOwner() && r.status==='open') {
+      actionBtn = `<button class="btn-approve" data-rid="${r.id}" data-action="approve-direct">✓ Slobodan dan</button><button class="btn-reject" data-rid="${r.id}" data-action="reject-open">✗ Odbij</button>`;
+    } else if (!isMine && r.status==='open' && !isOwner()) {
       actionBtn = alreadyCoveredByMe
         ? `<button class="btn-cover covered" disabled>✓ Preuzeo/la si</button>`
         : `<button class="btn-cover" data-rid="${r.id}">🙋 Preuzimam smjenu</button>`;
@@ -2136,6 +2138,7 @@ function renderSwaps() {
     </div>`;
   }).join('');
   list.querySelectorAll('.btn-cover[data-rid]').forEach(btn => btn.addEventListener('click', () => coverRequest(btn.dataset.rid)));
+  list.querySelectorAll('[data-action]').forEach(btn => btn.addEventListener('click', () => handleApproval(btn.dataset.rid, btn.dataset.action)));
 }
 
 async function coverRequest(rid) {
@@ -2171,16 +2174,26 @@ async function coverRequest(rid) {
 async function handleApproval(rid, action) {
   const r = STATE.requests.find(x=>x.id===rid);
   if (!r) return;
-  const newStatus = action==='approve' ? 'approved' : 'open';
-  const updates = action==='approve'
-    ? {status:'approved', approved_by:'owner'}
-    : {status:'open', covered_by:null};
+  let updates, newStatus, toast;
+  if (action === 'approve') {
+    updates = {status:'approved', approved_by:'owner'};
+    newStatus = 'approved'; toast = 'Zamjena odobrena ✓';
+  } else if (action === 'reject') {
+    updates = {status:'open', covered_by:null};
+    newStatus = 'open'; toast = 'Zamjena odbijena';
+  } else if (action === 'approve-direct') {
+    updates = {status:'approved', approved_by:'owner'};
+    newStatus = 'approved'; toast = 'Slobodan dan odobren ✓';
+  } else if (action === 'reject-open') {
+    updates = {status:'rejected'};
+    newStatus = 'rejected'; toast = 'Zahtjev odbijen';
+  }
   const { error } = await sb.from('shift_requests').update(updates).eq('id', rid);
   if (error) { showToast('Greška. Pokušaj ponovo.'); return; }
   r.status = newStatus;
-  if (action === 'reject') { r.coveredBy = null; }
-  else { r.approvedBy = 'owner'; }
-  showToast(action==='approve' ? 'Zamjena odobrena ✓' : 'Zamjena odbijena');
+  if (action === 'reject') r.coveredBy = null;
+  if (action === 'approve' || action === 'approve-direct') r.approvedBy = 'owner';
+  showToast(toast);
   updateBadges();
   renderSwaps();
 }
