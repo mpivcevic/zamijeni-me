@@ -889,6 +889,61 @@
       body: "Added 'Već imam PIN → Prijavi se' link to the login screen's no-session state. Tapping it reveals a phone number input. On submit, the app queries Supabase waiters table by phone number, finds the waiter record, and hands it to the existing PIN keypad. PIN verification uses the same verify_waiter_pin RPC as the normal login. Previously, waiters who cleared their browser data or installed the PWA fresh had no way to log back in — the only path was the one-time invite link.",
       why: "Clearing browser data or fresh PWA install wiped the waiter session with no recovery path. Critical missing feature discovered during two-browser testing setup.",
       date: "28 Jun 2026"
+    },
+    {
+      id: "build-4-11-pin-only-login",
+      phase: "build",
+      version: "Build 4.11",
+      versionDate: "29 Jun 2026",
+      tag: "feature",
+      title: "PIN-only login — café stored in localStorage after first invite",
+      body: "Replaced phone number lookup with PIN-only login. On first invite, the app saves the café ID to localStorage (zm_b_cafe_id). After that, the login screen shows only the PIN keypad — no name, no phone field. Entering a valid PIN calls the new login_waiter_by_pin RPC which finds the waiter by PIN within that café. SQL migration added: new login_waiter_by_pin RPC + updated set_waiter_pin to enforce PIN uniqueness within a café and return a boolean. Also added version label (v4.11) to the login screen for easier testing.",
+      why: "Phone number lookup was clunky and confusing — bad UX for non-technical waiters. PIN-only is simpler: open app, enter 4 digits, done. Café ID in localStorage is non-sensitive and survives most browser clears.",
+      date: "29 Jun 2026"
+    },
+    {
+      id: "build-4-12-pin-only-fixes",
+      phase: "build",
+      version: "Build 4.12",
+      versionDate: "29 Jun 2026",
+      tag: "fix",
+      title: "PIN-only login fixes — recover path + layout",
+      body: "Fixed two bugs discovered during testing. (1) Returning waiter using the invite link (recover path) never saved zm_b_cafe_id to localStorage — only the new PIN setup path did. After logout, no PIN keypad was shown. Fixed by adding localStorage.setItem to the recover branch. (2) PIN-only screen had awkward layout: logo at top edge, 'Vlasnik? Prijavi se' at bottom edge. Caused by the .login-name-display div keeping its 52px height even when empty. Fixed by hiding it via display:none in setupPinOnlyScreen() and restoring it in setupWaiterLoginScreen().",
+      why: "Both bugs were discovered during the first real testing session on Samsung browser.",
+      date: "29 Jun 2026"
+    },
+    {
+      id: "build-4-13-auto-update",
+      phase: "build",
+      version: "Build 4.13",
+      versionDate: "29 Jun 2026",
+      tag: "fix",
+      title: "Automatic app updates — SW v4, network-only HTML, reload on activate",
+      body: "Overhauled the update mechanism so users never need to manually clear cache. Three changes: (1) SW bumped to zm-v4 — HTML files are no longer cached at all, always fetched from network. (2) When a new SW activates, it sends a SW_UPDATED postMessage to all clients, triggering an immediate reload. (3) PWA manifest updated to manifest_b.json with correct start_url for Phase B.",
+      why: "Samsung home screen shortcut was consistently showing stale HTML versions. Cache-first SW was serving old files even after new deploys.",
+      date: "29 Jun 2026"
+    },
+    {
+      id: "build-4-14-responsive-keypad",
+      phase: "build",
+      version: "Build 4.14",
+      versionDate: "29 Jun 2026",
+      tag: "ui",
+      title: "Responsive PIN keypad — dvh + clamp() scaling",
+      body: "PIN keypad now scales correctly across all browsers and viewport heights. Used dvh units with clamp() on keypad max-width (200px–260px), gap (8px–12px), and font size (16px–20px). Also reduced margins (tagline, pin-dots, owner-link) with clamp() so the full screen fits even in a regular browser tab with address bar and navigation chrome. Screen padding also made responsive.",
+      why: "In Samsung browser (regular tab), the keypad overflowed the viewport — logo was clipped at top and 'Vlasnik? Prijavi se' was hidden below the browser nav bar. Home screen PWA was better but buttons were oversized.",
+      date: "29 Jun 2026"
+    },
+    {
+      id: "build-4-15-bg-refresh",
+      phase: "build",
+      version: "Build 4.15",
+      versionDate: "30 Jun 2026",
+      tag: "feature",
+      title: "Auto-reload after 15 min background",
+      body: "Added visibilitychange listener that reloads the app when it returns to the foreground after being hidden for 15+ minutes. Reload is skipped if any visible text input has content, so users mid-action (writing a swap note, typing a waiter name) are not interrupted. Combined with network-only HTML in the SW, this guarantees users always see the latest version after leaving and returning to the app.",
+      why: "Android can restore a backgrounded PWA visually without triggering a new network request, causing users to see stale HTML after returning to the app.",
+      date: "30 Jun 2026"
     }
   ];
   </script>
