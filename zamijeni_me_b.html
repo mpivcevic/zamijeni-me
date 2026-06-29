@@ -545,7 +545,7 @@ details[open] .hours-chevron::before{content:'▴';}
 <div id="screen-login" class="screen">
   <div class="login-logo">Zamijeni<span>Me</span></div>
   <p class="login-tagline">Tvoje smjene, tvoja pravila.</p>
-  <p style="font-size:10px;color:var(--text-3);margin-top:-24px;margin-bottom:clamp(14px,2.5dvh,24px);">v4.14</p>
+  <p style="font-size:10px;color:var(--text-3);margin-top:-24px;margin-bottom:clamp(14px,2.5dvh,24px);">v4.15</p>
   <!-- waiter session: show name + PIN keypad -->
   <div id="login-waiter-section" style="display:none;width:100%;flex-direction:column;align-items:center;">
     <div class="login-name-display">
@@ -2972,6 +2972,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (e.data?.type === 'SW_UPDATED') location.reload();
     });
   }
+
+  let _hiddenAt = null;
+  const REFRESH_AFTER_MS = 15 * 60 * 1000;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      _hiddenAt = Date.now();
+    } else if (document.visibilityState === 'visible' && _hiddenAt) {
+      if (Date.now() - _hiddenAt >= REFRESH_AFTER_MS) {
+        const hasUnsavedText = Array.from(document.querySelectorAll('input[type="text"], textarea'))
+          .some(el => el.value.trim().length > 0 && el.offsetParent !== null);
+        if (!hasUnsavedText) location.reload();
+      }
+      _hiddenAt = null;
+    }
+  });
 });
 </script>
 </body>
