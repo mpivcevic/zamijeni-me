@@ -427,6 +427,8 @@ details[open] .hours-chevron::before{content:'▴';}
 .chip-afternoon{background:var(--accent-light);color:var(--accent);}
 .chip-both{background:var(--danger-light);color:var(--danger);}
 .chip-covered{background:var(--success-light);color:var(--success);}
+.chip-rejected{background:var(--danger-light);color:var(--danger);}
+.new-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-left:6px;flex-shrink:0;vertical-align:middle;}
 .swap-note{font-size:13px;color:var(--text-2);font-style:italic;margin-bottom:12px;padding:8px 12px;background:var(--surface2);border-radius:var(--radius-sm);}
 .swap-actions{display:flex;gap:8px;}
 .btn-cover{flex:1;padding:11px;background:var(--accent);color:#fff;font-size:13px;font-weight:600;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;gap:6px;transition:background 0.15s;}
@@ -545,7 +547,7 @@ details[open] .hours-chevron::before{content:'▴';}
 <div id="screen-login" class="screen">
   <div class="login-logo">Zamijeni<span>Me</span></div>
   <p class="login-tagline">Tvoje smjene, tvoja pravila.</p>
-  <p style="font-size:10px;color:var(--text-3);margin-top:-24px;margin-bottom:clamp(14px,2.5dvh,24px);">v4.16</p>
+  <p style="font-size:10px;color:var(--text-3);margin-top:-24px;margin-bottom:clamp(14px,2.5dvh,24px);">v4.17</p>
   <!-- waiter session: show name + PIN keypad -->
   <div id="login-waiter-section" style="display:none;width:100%;flex-direction:column;align-items:center;">
     <div class="login-name-display">
@@ -1124,6 +1126,9 @@ async function loadAppData(cafe_id) {
 // ══════════════════════════════════════════════════════════
 async function init() {
   applyTheme(localStorage.getItem('zm_b_theme') || 'light');
+  if (!localStorage.getItem('zm_b_last_seen')) {
+    localStorage.setItem('zm_b_last_seen', new Date().toISOString());
+  }
 
   // 1. Invite token in URL
   const params = new URLSearchParams(location.search);
@@ -1694,6 +1699,9 @@ function getVisibleTabOrder() {
 function switchTab(tab, dir) {
   const order = getVisibleTabOrder();
   if (!order.includes(tab)) return;
+  if (STATE.activeTab === 'swaps' && tab !== 'swaps') {
+    localStorage.setItem('zm_b_last_seen', new Date().toISOString());
+  }
   STATE.activeTab = tab;
   order.forEach(t => {
     const el = document.getElementById(`tab-${t}`);
@@ -2100,9 +2108,10 @@ function renderSwaps() {
     return;
   }
 
+  const lastSeen = localStorage.getItem('zm_b_last_seen');
   let filtered = STATE.requests.filter(r => {
-    if (swapFilter === 'open') return r.status==='open' && (!w||r.waiterId!==w.id) && r.date>=todayIso;
-    if (swapFilter === 'mine') return w && r.waiterId===w.id;
+    if (swapFilter === 'open') return (r.status==='open'||r.status==='cover_rejected') && (!w||r.waiterId!==w.id) && r.date>=todayIso;
+    if (swapFilter === 'mine') return w && (r.waiterId===w.id || (r.coveredBy===w.id && (r.status==='approved'||r.status==='pending_approval'||r.status==='cover_rejected')));
     if (swapFilter === 'covered') return r.status==='approved'||r.status==='pending_approval';
     return true;
   });
@@ -2114,15 +2123,21 @@ function renderSwaps() {
     const requester = waiterById(r.waiterId);
     const coverer = r.coveredBy ? waiterById(r.coveredBy) : null;
     const isMine = w && r.waiterId === w.id;
-    const alreadyCoveredByMe = w && r.coveredBy === w.id;
+    const isCoveredByMe = w && r.coveredBy === w.id;
+    const alreadyCoveredByMe = isCoveredByMe && r.status === 'pending_approval';
     const shiftCls = r.shift==='jutro'?'chip-morning':r.shift==='popodne'?'chip-afternoon':'chip-both';
+    const isNew = lastSeen && r.updated_at && new Date(r.updated_at) > new Date(lastSeen);
+    const newDot = isNew ? '<span class="new-dot"></span>' : '';
     let statusChip = '';
     if (r.status==='pending_approval') statusChip=`<span class="detail-chip chip-covered">⏳ Na odobrenju (${coverer?.name})</span>`;
-    else if (r.status==='approved') statusChip=`<span class="detail-chip chip-covered">✓ Odobreno (${coverer?.name})</span>`;
+    else if (r.status==='approved' && coverer) statusChip=`<span class="detail-chip chip-covered">✓ Odobreno (${coverer?.name})</span>`;
+    else if (r.status==='approved' && !coverer) statusChip=`<span class="detail-chip chip-covered">✓ Slobodan dan odobren</span>`;
+    else if (r.status==='rejected') statusChip=`<span class="detail-chip chip-rejected">✗ Odbijen od vlasnika</span>`;
+    else if (r.status==='cover_rejected' && isCoveredByMe) statusChip=`<span class="detail-chip chip-rejected">✗ Pokrivanje odbijeno</span>`;
     let actionBtn = '';
-    if (isOwner() && r.status==='open') {
+    if (isOwner() && (r.status==='open'||r.status==='cover_rejected')) {
       actionBtn = `<button class="btn-approve" data-rid="${r.id}" data-action="approve-direct">✓ Slobodan dan</button><button class="btn-reject" data-rid="${r.id}" data-action="reject-open">✗ Odbij</button>`;
-    } else if (!isMine && r.status==='open' && !isOwner()) {
+    } else if (!isMine && (r.status==='open'||r.status==='cover_rejected') && !isOwner()) {
       actionBtn = alreadyCoveredByMe
         ? `<button class="btn-cover covered" disabled>✓ Preuzeo/la si</button>`
         : `<button class="btn-cover" data-rid="${r.id}">🙋 Preuzimam smjenu</button>`;
@@ -2130,7 +2145,7 @@ function renderSwaps() {
     return `<div class="swap-card">
       <div class="swap-card-header">
         <div class="avatar" style="background:${requester?.color||'#94a3b8'}">${initials(requester?.name||'?')}</div>
-        <div><div class="swap-person">${requester?.name||'Nepoznato'}</div><div class="swap-date">${formatDate(r.date)}</div></div>
+        <div><div class="swap-person">${requester?.name||'Nepoznato'}${newDot}</div><div class="swap-date">${formatDate(r.date)}</div></div>
       </div>
       <div class="swap-details"><span class="detail-chip ${shiftCls}">${shiftLabel(r.shift)}</span>${statusChip}</div>
       ${r.note?`<div class="swap-note">"${r.note}"</div>`:''}
@@ -2179,8 +2194,8 @@ async function handleApproval(rid, action) {
     updates = {status:'approved', approved_by:'owner'};
     newStatus = 'approved'; toast = 'Zamjena odobrena ✓';
   } else if (action === 'reject') {
-    updates = {status:'open', covered_by:null};
-    newStatus = 'open'; toast = 'Zamjena odbijena';
+    updates = {status:'cover_rejected'};
+    newStatus = 'cover_rejected'; toast = 'Zamjena odbijena';
   } else if (action === 'approve-direct') {
     updates = {status:'approved', approved_by:'owner'};
     newStatus = 'approved'; toast = 'Slobodan dan odobren ✓';
@@ -2191,7 +2206,6 @@ async function handleApproval(rid, action) {
   const { error } = await sb.from('shift_requests').update(updates).eq('id', rid);
   if (error) { showToast('Greška. Pokušaj ponovo.'); return; }
   r.status = newStatus;
-  if (action === 'reject') r.coveredBy = null;
   if (action === 'approve' || action === 'approve-direct') r.approvedBy = 'owner';
   showToast(toast);
   updateBadges();
