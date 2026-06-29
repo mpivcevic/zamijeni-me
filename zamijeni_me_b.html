@@ -288,24 +288,24 @@ details[open] .hours-chevron::before{content:'▴';}
 @keyframes spin{to{transform:rotate(360deg);}}
 
 /* ══ LOGIN SCREEN ═════════════════════════════════════════ */
-#screen-login{background:var(--bg);justify-content:center;align-items:center;padding:32px 24px;}
+#screen-login{background:var(--bg);justify-content:center;align-items:center;padding:clamp(16px,3dvh,32px) 24px;box-sizing:border-box;}
 .login-logo{font-size:32px;font-weight:700;color:var(--accent);letter-spacing:-0.04em;margin-bottom:4px;text-align:center;}
 .login-logo span{color:var(--text);}
-.login-tagline{font-size:13px;color:var(--text-3);text-align:center;margin-bottom:40px;}
+.login-tagline{font-size:13px;color:var(--text-3);text-align:center;margin-bottom:clamp(16px,3dvh,32px);}
 .login-name-display{height:52px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;}
 .login-name{font-size:22px;font-weight:600;color:var(--accent);opacity:0;transition:opacity 0.2s;}
 .login-name.visible{opacity:1;}
-.pin-dots{display:flex;gap:14px;justify-content:center;margin-bottom:32px;}
+.pin-dots{display:flex;gap:14px;justify-content:center;margin-bottom:clamp(14px,2.5dvh,24px);}
 .pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border-strong);background:transparent;transition:all 0.15s;}
 .pin-dot.filled{background:var(--accent);border-color:var(--accent);transform:scale(1.1);}
 .pin-dot.error{background:var(--danger);border-color:var(--danger);}
-.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:280px;}
-.key{aspect-ratio:1;border-radius:50%;background:var(--surface);border:1px solid var(--border);font-size:22px;font-weight:500;color:var(--text);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transition:background 0.1s,transform 0.1s;user-select:none;touch-action:manipulation;}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,1.5dvh,12px);width:100%;max-width:clamp(200px,calc((100dvh - 260px) * 0.75),260px);}
+.key{aspect-ratio:1;border-radius:50%;background:var(--surface);border:1px solid var(--border);font-size:clamp(16px,3dvh,20px);font-weight:500;color:var(--text);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);transition:background 0.1s,transform 0.1s;user-select:none;touch-action:manipulation;}
 .key:active{background:var(--surface2);transform:scale(0.93);}
 .key.key-del{font-size:18px;color:var(--text-2);}
 .key.key-empty{background:transparent;border:none;box-shadow:none;pointer-events:none;}
 .login-error{margin-top:16px;font-size:13px;color:var(--danger);text-align:center;min-height:20px;}
-.login-owner-link{margin-top:28px;font-size:13px;color:var(--text-3);text-align:center;}
+.login-owner-link{margin-top:clamp(14px,2.5dvh,24px);font-size:13px;color:var(--text-3);text-align:center;}
 .login-owner-link button{color:var(--accent);font-size:13px;font-weight:600;text-decoration:underline;}
 .login-no-session{text-align:center;max-width:240px;}
 .login-no-session p{font-size:14px;color:var(--text-2);line-height:1.6;margin-bottom:20px;}
@@ -545,7 +545,7 @@ details[open] .hours-chevron::before{content:'▴';}
 <div id="screen-login" class="screen">
   <div class="login-logo">Zamijeni<span>Me</span></div>
   <p class="login-tagline">Tvoje smjene, tvoja pravila.</p>
-  <p style="font-size:10px;color:var(--text-3);margin-top:-32px;margin-bottom:32px;">v4.13</p>
+  <p style="font-size:10px;color:var(--text-3);margin-top:-24px;margin-bottom:clamp(14px,2.5dvh,24px);">v4.14</p>
   <!-- waiter session: show name + PIN keypad -->
   <div id="login-waiter-section" style="display:none;width:100%;flex-direction:column;align-items:center;">
     <div class="login-name-display">
