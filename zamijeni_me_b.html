@@ -1230,6 +1230,7 @@ function setupWaiterLoginScreen(ws) {
   PIN_BUFFER = '';
   document.getElementById('login-waiter-section').style.display = 'flex';
   document.getElementById('login-no-session-section').style.display = 'none';
+  document.querySelector('.login-name-display').style.display = '';
   const nameEl = document.getElementById('login-name-display');
   nameEl.textContent = ws.name;
   nameEl.classList.add('visible');
@@ -1252,6 +1253,7 @@ function setupPinOnlyScreen() {
   document.getElementById('login-waiter-section').style.display = 'flex';
   document.getElementById('login-name-display').textContent = '';
   document.getElementById('login-name-display').classList.remove('visible');
+  document.querySelector('.login-name-display').style.display = 'none';
   renderPinDots([]);
   document.getElementById('login-error').textContent = '';
   document.getElementById('keypad').querySelectorAll('.key[data-key]').forEach(btn => {
