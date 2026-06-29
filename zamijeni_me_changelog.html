@@ -944,6 +944,17 @@
       body: "Added visibilitychange listener that reloads the app when it returns to the foreground after being hidden for 15+ minutes. Reload is skipped if any visible text input has content, so users mid-action (writing a swap note, typing a waiter name) are not interrupted. Combined with network-only HTML in the SW, this guarantees users always see the latest version after leaving and returning to the app.",
       why: "Android can restore a backgrounded PWA visually without triggering a new network request, causing users to see stale HTML after returning to the app.",
       date: "30 Jun 2026"
+    },
+    {
+      id: "build-4-16-owner-open-request-actions",
+      phase: "build",
+      version: "Build 4.16",
+      versionDate: "30 Jun 2026",
+      tag: "feature",
+      title: "Owner can act on open requests — approve day off or reject outright",
+      body: "Added two action buttons to open requests in the owner view: '✓ Slobodan dan' directly approves the day off without requiring a volunteer cover, and '✗ Odbij' rejects the request entirely. Previously the owner had no actions available until another waiter volunteered — the approve/reject buttons only appeared on pending_approval requests. handleApproval extended with two new actions: approve-direct (status → approved, no covered_by) and reject-open (status → rejected).",
+      why: "Owner needs full control at every stage. A waiter might request a day off that the owner can grant directly (covering themselves or adjusting the schedule), or deny immediately without waiting for a volunteer.",
+      date: "30 Jun 2026"
     }
   ];
   </script>
