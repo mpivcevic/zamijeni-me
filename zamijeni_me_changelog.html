@@ -955,6 +955,39 @@
       body: "Added two action buttons to open requests in the owner view: '✓ Slobodan dan' directly approves the day off without requiring a volunteer cover, and '✗ Odbij' rejects the request entirely. Previously the owner had no actions available until another waiter volunteered — the approve/reject buttons only appeared on pending_approval requests. handleApproval extended with two new actions: approve-direct (status → approved, no covered_by) and reject-open (status → rejected).",
       why: "Owner needs full control at every stage. A waiter might request a day off that the owner can grant directly (covering themselves or adjusting the schedule), or deny immediately without waiting for a volunteer.",
       date: "30 Jun 2026"
+    },
+    {
+      id: "build-4-17-feedback-and-dots",
+      phase: "build",
+      version: "Build 4.17",
+      versionDate: "30 Jun 2026",
+      tag: "feature",
+      title: "New-item dots, Moje covers, cover_rejected status, rejected feedback",
+      body: "Four changes in one build: (1) Blue dot indicator on swap cards that changed since the user last visited the Zamjene tab — zm_b_last_seen saved to localStorage on tab leave, initialized on first load. (2) Moje tab now shows requests where the waiter is the volunteer (coveredBy === w.id) with approved/pending_approval/cover_rejected status, not just requests they submitted. (3) New cover_rejected DB status — when owner rejects a cover offer, status becomes cover_rejected (coveredBy kept) instead of reverting to open. Volunteer sees 'Pokrivanje odbijeno' chip in Moje. Request reappears in Otvorene for new volunteers. Required DB migration: added cover_rejected to status check constraint. (4) Rejected request chip — own request rejected by owner shows '✗ Odbijen od vlasnika' chip in Moje.",
+      why: "Volunteers and requesters had no feedback when owner acted on their requests. Moje tab only showed submitted requests, missing the volunteer side of the swap. No way to distinguish new/changed items from stale ones without reading every card.",
+      date: "30 Jun 2026"
+    },
+    {
+      id: "build-4-18-updated-at-refresh",
+      phase: "build",
+      version: "Build 4.18",
+      versionDate: "30 Jun 2026",
+      tag: "fix",
+      title: "Fix dots (updatedAt missing from mapRequest) + refresh on Zamjene enter",
+      body: "mapRequest was not mapping the updated_at DB column, so r.updatedAt was always undefined and no dots ever showed. Added updatedAt to the mapped fields (falls back to created_at for old rows). Also added a background refresh of shift_requests from DB every time the Zamjene tab is opened — renders current STATE immediately then re-renders with fresh DB data. Required DB migration: added updated_at column to shift_requests with auto-update trigger (BEFORE UPDATE trigger calling set_updated_at()).",
+      why: "Dots never showed because the field wasn't mapped. Volunteer saw stale pending_approval status because STATE wasn't refreshed after owner acted.",
+      date: "30 Jun 2026"
+    },
+    {
+      id: "build-4-19-badge-and-refresh-fix",
+      phase: "build",
+      version: "Build 4.19",
+      versionDate: "30 Jun 2026",
+      tag: "fix",
+      title: "Fix badge count for cover_rejected + refresh on filter tab switch",
+      body: "Owner badge was counting open + pending_approval but missing cover_rejected — showing 2 when there were 3 active requests. Added cover_rejected to the badge filter. Extracted refreshRequests() helper that fetches fresh shift_requests from DB and calls renderSwaps() + updateBadges(). refreshRequests now called both on Zamjene tab enter AND on filter sub-tab switch (Otvorene/Moje/Na čekanju/Pokrivene), so the volunteer always gets fresh data when tapping Moje without needing to leave and re-enter the tab.",
+      why: "Badge undercount caused by cover_rejected not being treated as an active request. Volunteer still saw stale status after owner rejected their cover because refresh only fired on tab entry, not on filter switch.",
+      date: "30 Jun 2026"
     }
   ];
   </script>
