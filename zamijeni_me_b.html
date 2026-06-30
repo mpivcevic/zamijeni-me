@@ -547,7 +547,7 @@ details[open] .hours-chevron::before{content:'▴';}
 <div id="screen-login" class="screen">
   <div class="login-logo">Zamijeni<span>Me</span></div>
   <p class="login-tagline">Tvoje smjene, tvoja pravila.</p>
-  <p style="font-size:10px;color:var(--text-3);margin-top:-24px;margin-bottom:clamp(14px,2.5dvh,24px);">v4.18</p>
+  <p style="font-size:10px;color:var(--text-3);margin-top:-24px;margin-bottom:clamp(14px,2.5dvh,24px);">v4.19</p>
   <!-- waiter session: show name + PIN keypad -->
   <div id="login-waiter-section" style="display:none;width:100%;flex-direction:column;align-items:center;">
     <div class="login-name-display">
@@ -1720,13 +1720,7 @@ function switchTab(tab, dir) {
     setTimeout(() => el.classList.remove('slide-in-left','slide-in-right'), 220);
   }
   if (tab === 'home') renderHome();
-  if (tab === 'swaps') {
-    renderSwaps();
-    if (STATE.cafe?.id) {
-      sb.from('shift_requests').select('*').eq('cafe_id', STATE.cafe.id)
-        .then(({ data }) => { if (data) { STATE.requests = data.map(mapRequest); renderSwaps(); } });
-    }
-  }
+  if (tab === 'swaps') { renderSwaps(); refreshRequests(); }
   if (tab === 'week') renderWeekView();
   if (tab === 'month') renderMonthView();
   if (tab === 'admin') renderAdmin();
@@ -1735,11 +1729,17 @@ function switchTab(tab, dir) {
 // ══════════════════════════════════════════════════════════
 // BADGES
 // ══════════════════════════════════════════════════════════
+function refreshRequests() {
+  if (!STATE.cafe?.id) return;
+  sb.from('shift_requests').select('*').eq('cafe_id', STATE.cafe.id)
+    .then(({ data }) => { if (data) { STATE.requests = data.map(mapRequest); renderSwaps(); updateBadges(); } });
+}
+
 function updateBadges() {
   const swapBadge = document.getElementById('swap-badge');
   document.getElementById('admin-badge').style.display = 'none';
   if (isOwner()) {
-    const n = STATE.requests.filter(r=>r.status==='open'||r.status==='pending_approval').length;
+    const n = STATE.requests.filter(r=>r.status==='open'||r.status==='pending_approval'||r.status==='cover_rejected').length;
     swapBadge.style.display = n ? 'flex' : 'none';
     if (n) swapBadge.textContent = n;
   } else {
@@ -2917,6 +2917,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       swapFilter=tab.dataset.filter;
       document.querySelectorAll('.filter-tab').forEach(t=>t.classList.toggle('active',t===tab));
       renderSwaps();
+      refreshRequests();
     });
   });
 
